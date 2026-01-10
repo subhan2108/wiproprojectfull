@@ -1,5 +1,5 @@
 const API_BASE_URL = "https://wiproadmin.onrender.com";
-const AUTH_PREFIX = "/auth";
+const AUTH_PREFIX = "/api/auth";
 const TOKEN_REFRESH_ENDPOINT = "/auth/token/refresh/";
 
 /* =======================
