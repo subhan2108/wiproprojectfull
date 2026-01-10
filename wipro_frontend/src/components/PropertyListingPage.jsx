@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const API_URL = "https://wiproadmin.onrender.com/api/properties/";
+import { propertiesAPI } from "../services/api";
 
 const PropertyList = () => {
   const [properties, setProperties] = useState([]);
@@ -12,23 +11,10 @@ const PropertyList = () => {
     const fetchProperties = async () => {
       try {
         setLoading(true);
-
-        const response = await fetch(API_URL, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await propertiesAPI.list();
         setProperties(Array.isArray(data) ? data : data.results || []);
       } catch (err) {
-        console.error(err);
-        setError("Failed to load properties");
+        setError(err.message || "Failed to load properties");
       } finally {
         setLoading(false);
       }
@@ -38,7 +24,7 @@ const PropertyList = () => {
   }, []);
 
   if (loading) return <div className="loading">Loading properties...</div>;
-  if (error) return <div className="error">{error}</div>;
+  if (error) return <div className="error">Error: {error}</div>;
 
   return (
     <div className="property-list-container">
@@ -69,7 +55,7 @@ const PropertyList = () => {
                 ₹{Number(property.price).toLocaleString()}
               </p>
               <p className="property-description">
-                {property.description?.slice(0, 100)}...
+                {property.description?.substring(0, 100)}...
               </p>
 
               <Link
