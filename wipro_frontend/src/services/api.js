@@ -1,134 +1,182 @@
-const API_BASE_URL = "https://wiproadmin.onrender.com";
-const AUTH_PREFIX = "/api/auth";
-const TOKEN_REFRESH_ENDPOINT = "/auth/token/refresh/";
+// =======================
+// Environment variables
+// =======================
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const AUTH_PREFIX = import.meta.env.VITE_AUTH_ENDPOINTS_PREFIX;
+const TOKEN_REFRESH_ENDPOINT = import.meta.env.VITE_TOKEN_REFRESH_ENDPOINT;
 
-/* =======================
-   Helpers
-======================= */
+// =======================
+// Helpers
+// =======================
 const getAuthHeaders = () => {
-  const token = localStorage.getItem("access_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  const token = localStorage.getItem('access_token');
+  return {
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
 };
 
 const logoutUser = async () => {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  window.location.href = "/login";
+  const refreshToken = localStorage.getItem('refresh_token');
+
+  if (refreshToken) {
+    try {
+      await fetch(`${API_BASE_URL}${AUTH_PREFIX}/logout/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      });
+    } catch (err) {
+      console.warn('Logout request failed');
+    }
+  }
+
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  window.location.href = '/login';
 };
 
-/* =======================
-   Core Fetch Wrapper
-======================= */
+// =======================
+// Core fetch wrapper
+// =======================
 const fetchWithAuth = async (endpoint, options = {}) => {
-  let response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const config = {
     headers: {
-      "Content-Type": "application/json",
       ...getAuthHeaders(),
-      ...options.headers,
+      ...(options.headers || {}),
     },
     ...options,
-  });
+  };
 
-  // 🔁 Token refresh
+  let response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+
+  // Handle token refresh
   if (response.status === 401 && !endpoint.includes(TOKEN_REFRESH_ENDPOINT)) {
-    const refresh = localStorage.getItem("refresh_token");
+    const refreshToken = localStorage.getItem('refresh_token');
 
-    if (!refresh) {
-      logoutUser();
-      throw new Error("Session expired");
+    if (!refreshToken) {
+      await logoutUser();
+      throw new Error('Session expired');
     }
 
-    const refreshRes = await fetch(
+    const refreshResponse = await fetch(
       `${API_BASE_URL}${TOKEN_REFRESH_ENDPOINT}`,
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh: refreshToken }),
       }
     );
 
-    if (!refreshRes.ok) {
-      logoutUser();
-      throw new Error("Session expired");
+    if (!refreshResponse.ok) {
+      await logoutUser();
+      throw new Error('Session expired');
     }
 
-    const refreshData = await refreshRes.json();
-    localStorage.setItem("access_token", refreshData.access);
+    const refreshData = await refreshResponse.json();
+    localStorage.setItem('access_token', refreshData.access);
 
-    // Retry original request
-    response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${refreshData.access}`,
-      },
-      ...options,
-    });
+    // retry original request
+    config.headers.Authorization = `Bearer ${refreshData.access}`;
+    response = await fetch(`${API_BASE_URL}${endpoint}`, config);
   }
+
+  const contentType = response.headers.get('content-type');
+  const data =
+    contentType && contentType.includes('application/json')
+      ? await response.json()
+      : await response.text();
 
   if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.detail || "Request failed");
+    throw new Error(data?.detail || data?.message || 'Request failed');
   }
 
-  return response.json();
+  return data;
 };
 
-/* =======================
-   Properties API
-======================= */
+// =======================
+// Base API object
+// =======================
+const apiRequest = {
+  get: (url) => fetchWithAuth(url),
+  post: (url, data, headers = {}) =>
+    fetchWithAuth(url, {
+      method: 'POST',
+      headers,
+      body: data instanceof FormData ? data : JSON.stringify(data),
+    }),
+  put: (url, data) =>
+    fetchWithAuth(url, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  patch: (url, data) =>
+    fetchWithAuth(url, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  delete: (url) =>
+    fetchWithAuth(url, {
+      method: 'DELETE',
+    }),
+};
+
+// =======================
+// Properties API
+// =======================
 export const propertiesAPI = {
-  list: () => fetchWithAuth("/properties/"),
+  list: (params) =>
+    apiRequest.get(
+      `/properties/${params ? `?${new URLSearchParams(params)}` : ''}`
+    ),
 
-  get: (id) => fetchWithAuth(`/properties/${id}/`),
+  get: (id) => apiRequest.get(`/properties/${id}/`),
 
-  create: (data) =>
-    fetchWithAuth("/properties/", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
+  create: (data) => apiRequest.post('/properties/', data),
 
-  update: (id, data) =>
-    fetchWithAuth(`/properties/${id}/`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    }),
+  update: (id, data) => apiRequest.put(`/properties/${id}/`, data),
 
-  delete: (id) =>
-    fetchWithAuth(`/properties/${id}/`, {
-      method: "DELETE",
-    }),
+  remove: (id) => apiRequest.delete(`/properties/${id}/`),
 
   uploadImage: (id, file) => {
     const formData = new FormData();
-    formData.append("image", file);
-
-    return fetch(`${API_BASE_URL}/properties/${id}/upload-image/`, {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: formData,
-    }).then((res) => res.json());
+    formData.append('image', file);
+    return apiRequest.post(
+      `/properties/${id}/upload-image/`,
+      formData
+    );
   },
 };
 
-/* =======================
-   Auth API
-======================= */
+// =======================
+// Auth API
+// =======================
 export const authAPI = {
-  login: (data) =>
-    fetchWithAuth("/auth/login/", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
+  login: (credentials) =>
+    apiRequest.post(`${AUTH_PREFIX}/login/`, credentials),
 
   register: (data) =>
-    fetchWithAuth("/auth/register/", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
+    apiRequest.post(`${AUTH_PREFIX}/register/`, data),
 
-  profile: () => fetchWithAuth("/auth/profile/"),
+  profile: () =>
+    apiRequest.get(`${AUTH_PREFIX}/profile/`),
+
+  updateProfile: (data) =>
+    apiRequest.put(`${AUTH_PREFIX}/profile/`, data),
+
+  changePassword: (data) =>
+    apiRequest.post(`${AUTH_PREFIX}/change-password/`, data),
 
   logout: logoutUser,
 };
 
-export default fetchWithAuth;
+// =======================
+// Export config
+// =======================
+export const config = {
+  API_BASE_URL,
+};
+
+export default apiRequest;
