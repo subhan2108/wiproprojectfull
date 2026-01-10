@@ -1,0 +1,80 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f4f6f8;
+}
+
+.container {
+  padding: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+}
+
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+button {
+  padding: 10px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+
+.tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.tag.completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.tag.pending {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.purchase-card {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 8px;
+}
+
+
+.tag {
+  padding: 4px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tag.completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.tag.pending {
+  background: #fff7ed;
+  color: #9a3412;
+}
