@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { config } from '../services/api';
+import '../services/api';
 
 const Dashboard = () => {
   const { user } = useAuth();
