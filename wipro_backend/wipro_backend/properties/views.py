@@ -11,6 +11,7 @@ from .filters import PropertyFilter
 from django.db import transaction as db_tx
 from .models import *
 from .serializers import *
+from .serializers import GroupPaymentInviteSerializer
 
 
 class PropertyListCreateView(generics.ListCreateAPIView):
@@ -1001,12 +1002,8 @@ class RespondGroupPaymentInviteView(generics.GenericAPIView):
 
         if action not in ["accept", "reject"]:
             return Response({"error": "action must be accept or reject"}, status=400)
-        
-        
 
         invite = get_object_or_404(GroupPaymentInvite, id=invite_id)
-
-        
 
         if invite.invited_user != request.user:
             return Response({"error": "Not allowed"}, status=403)
@@ -1014,12 +1011,6 @@ class RespondGroupPaymentInviteView(generics.GenericAPIView):
         if invite.status != "pending":
             return Response({"error": "Already responded"}, status=400)
 
-        invite.status = "accepted" if action == "accept" else "rejected"
-        invite.save(update_fields=["status"])
-
-        # ===============================
-        # ACCEPT
-        # ===============================
         if action == "accept":
             invite.status = "accepted"
             invite.save(update_fields=["status"])
@@ -1029,21 +1020,15 @@ class RespondGroupPaymentInviteView(generics.GenericAPIView):
                 property=invite.plan.property,
                 type="group_payment",
                 title="Group payment accepted",
-                message=(
-                    f"{request.user.username} accepted "
-                    f"group payment for {invite.plan.property.title}"
-                )
+                message=f"{request.user.username} accepted group payment for {invite.plan.property.title}"
             )
 
             return Response({
                 "message": "Invite accepted",
-                # 🔥 FRONTEND WILL REDIRECT USING THIS
                 "redirect": f"/payment/{invite.plan.id}"
             })
 
-        # ===============================
-        # REJECT
-        # ===============================
+        # reject
         invite.status = "rejected"
         invite.save(update_fields=["status"])
 
@@ -1052,19 +1037,10 @@ class RespondGroupPaymentInviteView(generics.GenericAPIView):
             property=invite.plan.property,
             type="group_payment",
             title="Group payment rejected",
-            message=(
-                f"{request.user.username} rejected "
-                f"group payment for {invite.plan.property.title}"
-            )
+            message=f"{request.user.username} rejected group payment for {invite.plan.property.title}"
         )
 
-        return Response({
-            "message": "Invite rejected"
-        })
-
-        
-
-        return Response({"message": f"Invite {invite.status}"})
+        return Response({"message": "Invite rejected"})
 
 
 
@@ -1078,10 +1054,23 @@ class UserSearchView(generics.ListAPIView):
         q = self.request.query_params.get("q")
         if not q:
             return User.objects.none()
+        
+    def get_queryset(self):
+        print("SEARCH USER:", self.request.user)
+        print("QUERY:", self.request.query_params.get("q"))
+
+        q = self.request.query_params.get("q")
+        if not q:
+         return User.objects.none()
+
+        return User.objects.filter(username__icontains=q)
 
         return User.objects.filter(
             username__icontains=q
         ).exclude(id=self.request.user.id)
+    
+    
+
 
 
 
@@ -1115,3 +1104,21 @@ class SendGroupPaymentInviteView(generics.GenericAPIView):
         )
 
         return Response({"message": "Invite sent"})
+
+
+
+
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+
+
+
+class MyGroupPaymentInvitesView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = GroupPaymentInviteSerializer
+
+    def get_queryset(self):
+        qs = GroupPaymentInvite.objects.all()
+        print("DEBUG INVITES:", qs)  # 👈 TEMP DEBUG
+        return qs
+

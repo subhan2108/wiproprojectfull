@@ -1,26 +1,41 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api/api";
+import { useNavigate } from "react-router-dom";
 
 export default function GroupPaymentInvitesPage() {
   const [invites, setInvites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    apiFetch("/group-invites/")
-      .then(setInvites)
+    apiFetch("/properties/group-invites/")
+      .then(data => {
+        setInvites(data.results || []);
+      })
       .finally(() => setLoading(false));
   }, []);
 
   const respond = async (inviteId, action) => {
     try {
-      await apiFetch(`/group-invites/${inviteId}/respond/`, {
-        method: "POST",
-        body: JSON.stringify({ action }),
-      });
+      const res = await apiFetch(
+        `/group-payment-invites/${inviteId}/respond/`,
+        {
+          method: "POST",
+          body: JSON.stringify({ action }),
+        }
+      );
 
-      setInvites(invites.map(inv =>
-        inv.id === inviteId ? { ...inv, status: action } : inv
-      ));
+      // redirect on accept
+      if (res.redirect) {
+        navigate(res.redirect);
+        return;
+      }
+
+      setInvites(prev =>
+        prev.map(inv =>
+          inv.id === inviteId ? { ...inv, status: action } : inv
+        )
+      );
     } catch (err) {
       alert(err.error || "Action failed");
     }
@@ -37,15 +52,14 @@ export default function GroupPaymentInvitesPage() {
       {invites.map(invite => (
         <div key={invite.id} className="card">
           <h4>{invite.property.title}</h4>
-          <p>Amount to pay: ₹{invite.amount}</p>
           <p>Status: {invite.status}</p>
 
-          {invite.status === "invited" && (
+          {invite.status === "pending" && (
             <>
-              <button onClick={() => respond(invite.id, "accepted")}>
+              <button onClick={() => respond(invite.id, "accept")}>
                 Accept
               </button>
-              <button onClick={() => respond(invite.id, "rejected")}>
+              <button onClick={() => respond(invite.id, "reject")}>
                 Reject
               </button>
             </>

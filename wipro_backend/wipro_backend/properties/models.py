@@ -417,6 +417,12 @@ class GroupPaymentInvite(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     plan = models.ForeignKey(PurchasePlan, on_delete=models.CASCADE, related_name="payment_invites")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="group_payment_invites")
+    invited_user = models.ForeignKey(
+    User,
+    on_delete=models.CASCADE,
+    null=True
+)
+
 
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS, default="pending")

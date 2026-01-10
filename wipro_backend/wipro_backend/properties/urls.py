@@ -71,6 +71,11 @@ path(
     name="interests-mine"
 ),
 
+path(
+    "group-invites/",
+    MyGroupPaymentInvitesView.as_view(),
+    name="group-invites"
+),
 
 
 

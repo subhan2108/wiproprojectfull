@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from .models import Property, PropertyImage, PropertyInquiry, PropertyFavorite
 from django.contrib.auth.models import User
+from .models import *
+from .models import GroupPaymentInvite
+
 
 class PropertyImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -211,3 +214,30 @@ class UserMiniSerializer(ModelSerializer):
 
 class InitiateGroupPaymentSerializer(serializers.Serializer):
     pass
+
+class PropertyMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Property
+        fields = [
+            "id",
+            "title",
+            "price",
+            "status",
+        ]
+
+
+
+class GroupPaymentInviteSerializer(serializers.ModelSerializer):
+    property = PropertyMiniSerializer(
+        source="plan.property",
+        read_only=True
+    )
+
+    class Meta:
+        model = GroupPaymentInvite
+        fields = [
+            "id",
+            "status",
+            "created_at",
+            "property",
+        ]

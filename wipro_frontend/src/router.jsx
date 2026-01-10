@@ -17,6 +17,7 @@ import PaymentPage from "./pages/PaymentPage"
 import PaymentSuccess from "./pages/PaymentSuccess";
 import GroupInterestPage from "./pages/GroupInterestPage";
 import GroupPaymentInvitesPage from "./pages/GroupPaymentInvitesPage";
+import InviteMembersPage from "./pages/InviteMembersPage";
 
 
 /* 🔐 Protected Route */
@@ -126,6 +127,15 @@ export const router = createBrowserRouter([
     element: (
       <Protected>
         <PaymentPage />
+      </Protected>
+    ),
+  },
+
+{
+    path: "invite-members/:planId",
+    element: (
+      <Protected>
+        <InviteMembersPage />
       </Protected>
     ),
   },

@@ -111,6 +111,14 @@ export default function PaymentPage() {
   </>
 )}
 
+<button
+  onClick={() => navigate(`/invite-members/${planId}`)}
+  style={{ marginBottom: 20 }}
+>
+  Invite Group Members
+</button>
+
+
 <p><strong>Your Payable:</strong> ₹{payable.your_payable}</p>
 
 
