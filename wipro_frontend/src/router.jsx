@@ -18,6 +18,11 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import GroupInterestPage from "./pages/GroupInterestPage";
 import GroupPaymentInvitesPage from "./pages/GroupPaymentInvitesPage";
 import InviteMembersPage from "./pages/InviteMembersPage";
+import GroupInvitePage from "./pages/GroupInvitePage";
+import WalletDashboard from "./pages/Wallet-Dashboard";
+import CommitteeList from "./pages/CommitteeList";
+import CommitteeDetail from "./pages/CommitteeDetail";
+import MyCommittees from "./pages/MyCommittees";
 
 
 /* 🔐 Protected Route */
@@ -48,6 +53,50 @@ export const router = createBrowserRouter([
   },
 
   {
+    path: "/committees",
+    element: (
+      <Protected>
+        <CommitteeList />
+      </Protected>
+    ),
+  },
+  {
+    path: "/committees/:id",
+    element: (
+      <Protected>
+        <CommitteeDetail />
+      </Protected>
+    ),
+  },
+
+  {
+    path: "/my-committees",
+    element: (
+      <Protected>
+        <MyCommittees />
+      </Protected>
+    ),
+  },
+
+  {
+    path: "/wallet-dashboard",
+    element: (
+      <Protected>
+        <WalletDashboard />
+      </Protected>
+    ),
+  },
+
+  {
+    path: "/dashboard",
+    element: (
+      <Protected>
+        <Dashboard />
+      </Protected>
+    ),
+  },
+
+  {
     path: "/grouppayment",
     element: (
       <Protected>
@@ -60,6 +109,15 @@ export const router = createBrowserRouter([
   element: (
     <Protected>
       <GroupPaymentInvitesPage />
+    </Protected>
+  ),
+},
+
+ {
+  path: "/group-invite/:inviteId",
+  element: (
+    <Protected>
+      <GroupInvitePage />
     </Protected>
   ),
 },

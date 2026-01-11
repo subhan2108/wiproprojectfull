@@ -44,6 +44,13 @@ path("plans/<uuid:plan_id>/invite-user/", SendGroupPaymentInviteView.as_view()),
     # Statistics
     path('stats/', views.property_stats, name='property-stats'),
 
+
+    path(
+  "plans/<uuid:plan_id>/share-invite/",
+  CreateShareInviteView.as_view()
+),
+
+
     
 
     # Interest + owner respond

@@ -213,7 +213,12 @@ class Investment(models.Model):
     ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     pool = models.ForeignKey(InvestmentPool, on_delete=models.CASCADE, related_name="investments")
-    investor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="investments")
+    investor = models.ForeignKey(
+    User,
+    on_delete=models.CASCADE,
+    related_name="property_investments"
+)
+
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -236,7 +241,12 @@ class OwnerNotification(models.Model):
     TYPE_CHOICES = [("interest","Interest"), ("payment","Payment"), ("sold","Sold")]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    user = models.ForeignKey(
+    User,
+    on_delete=models.CASCADE,
+    related_name="property_notifications"
+)
+
     property = models.ForeignKey("Property", on_delete=models.CASCADE, related_name="notifications")
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     title = models.CharField(max_length=120)
@@ -407,28 +417,20 @@ class Transaction(models.Model):
 
 
 
+import uuid
+
 class GroupPaymentInvite(models.Model):
-    STATUS = [
-        ("pending", "Pending"),
-        ("accepted", "Accepted"),
-        ("rejected", "Rejected"),
-    ]
+    plan = models.ForeignKey(PurchasePlan, on_delete=models.CASCADE)
+    invited_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    plan = models.ForeignKey(PurchasePlan, on_delete=models.CASCADE, related_name="payment_invites")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="group_payment_invites")
-    invited_user = models.ForeignKey(
-    User,
-    on_delete=models.CASCADE,
-    null=True
-)
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False )
 
-
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    status = models.CharField(max_length=20, choices=STATUS, default="pending")
-    is_payer = models.BooleanField(default=False)  # only host = True
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ("plan", "user")
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("pending", "Pending"),
+            ("accepted", "Accepted"),
+            ("rejected", "Rejected"),
+        ],
+        default="pending"
+    )

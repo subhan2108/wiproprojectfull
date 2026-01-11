@@ -52,7 +52,19 @@ INSTALLED_APPS = [
     'accounts',
     'django_filters',  # Add this
     'properties',  # Add this
+    'wallet',
+    'investments',
+    'loans',
+    'notifications',
+    'dashboard',
+    'committees',
+
+
 ]
+
+
+
+
 
 # Media files configuration
 MEDIA_URL = '/media/'

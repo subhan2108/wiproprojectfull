@@ -50,6 +50,17 @@ export default function PaymentPage() {
     });
   };
 
+
+  const generateInvite = async () => {
+  const res = await apiFetch(
+    `/properties/plans/${planId}/share-invite/`,
+    { method: "POST" }
+  );
+  navigator.clipboard.writeText(res.invite_link);
+  alert("Invite link copied! Share it anywhere.");
+};
+
+
   const submitPayment = async (e) => {
     e.preventDefault();
     setProcessing(true);
@@ -90,6 +101,11 @@ export default function PaymentPage() {
         <p className="total">
           <strong>Your Payable:</strong> ₹{payable.your_payable}
         </p>
+
+        <button onClick={generateInvite}>
+  Share Group Invite
+</button>
+
 
         <small>{payable.note}</small>
       </div>

@@ -7,11 +7,15 @@ from rest_framework.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+
+from wallet.services import credit_wallet
 from .filters import PropertyFilter
 from django.db import transaction as db_tx
 from .models import *
 from .serializers import *
 from .serializers import GroupPaymentInviteSerializer
+from wallet.services import credit_wallet
+
 
 
 class PropertyListCreateView(generics.ListCreateAPIView):
@@ -379,8 +383,28 @@ class LeadInvestorTransactionView(generics.GenericAPIView):
             note=ser.validated_data.get("note", "")
         )
 
+        if transaction.status == "success":
+         credit_wallet(
+        wallet=user.wallet,
+        amount=transaction.amount,
+        tx_type="investment",
+        source="payment",
+        reference_id=transaction.id
+    )
+
+
         if tx_status != "success":
             return Response({"message": "Transaction failed.", "transaction": TransactionSerializer(tx).data}, status=400)
+        
+        credit_wallet(
+    wallet=request.user.wallet,
+    amount=amount,
+    tx_type="investment",
+    source="payment",
+    reference_id=tx.id,
+    note=f"Lead investor payment for {prop.title}"
+)
+
 
         # SUCCESS => sold for everyone
         prop.status = "sold"
@@ -714,27 +738,13 @@ class PlanPayView(generics.GenericAPIView):
         amount = _compute_user_payable(plan, user)
 
         # 🔐 GROUP PAYMENT RULES
+        # ✅ LINK-BASED GROUP PAYMENT RULE   
         if plan.mode == "group":
-            if user != plan.created_by:
-                invite = GroupPaymentInvite.objects.filter(
-                    plan=plan,
-                    invited_user=user
-                ).first()
-
-                if not invite:
-                    return Response({"error": "You are not invited for this group payment."}, status=403)
-
-                if invite.status != "accepted":
-                    return Response({"error": "You must accept the group payment request first."}, status=400)
-            else:
-                # 🔥 Host absorbs rejected shares
-                rejected_invites = GroupPaymentInvite.objects.filter(
-                    plan=plan,
-                    status="rejected"
+            if plan.confirmed_count >= plan.group_size:
+                   return Response(
+                    {"error": "Group payment is already full."},
+                    status=400
                 )
-                for inv in rejected_invites:
-                    amount += inv.amount
-
         contribution = Contribution.objects.create(
             plan=plan,
             payer=user,
@@ -753,6 +763,15 @@ class PlanPayView(generics.GenericAPIView):
             payer_phone=serializer.validated_data["payer_phone"],
             note=serializer.validated_data.get("note", "")
         )
+        if transaction.status == "success":
+          credit_wallet(
+        wallet=user.wallet,
+        amount=transaction.amount,
+        tx_type="investment",
+        source="payment",
+        reference_id=transaction.id
+    )
+    
 
         if tx_status != "success":
             contribution.status = "failed"
@@ -761,6 +780,17 @@ class PlanPayView(generics.GenericAPIView):
 
         contribution.status = "confirmed"
         contribution.save(update_fields=["status"])
+
+        # 🔗 WALLET CREDIT HOOK
+        credit_wallet(
+        wallet=user.wallet,
+        amount=amount,
+        tx_type="investment",
+        source="payment",
+        reference_id=transaction.id,
+        note=f"Property investment payment for {prop.title}"
+)
+
 
         # ✅ Mark invite as paid
         if plan.mode == "group" and user != plan.created_by:
@@ -994,19 +1024,22 @@ class InitiateGroupPaymentView(generics.GenericAPIView):
 
 
 class RespondGroupPaymentInviteView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = []  # 🔥 REMOVE AUTH
 
     @db_tx.atomic
     def post(self, request, invite_id):
         action = request.data.get("action")
 
         if action not in ["accept", "reject"]:
-            return Response({"error": "action must be accept or reject"}, status=400)
+            return Response(
+                {"error": "action must be accept or reject"},
+                status=400
+            )
 
-        invite = get_object_or_404(GroupPaymentInvite, id=invite_id)
-
-        if invite.invited_user != request.user:
-            return Response({"error": "Not allowed"}, status=403)
+        invite = get_object_or_404(
+            GroupPaymentInvite,
+            token=invite_id
+        )
 
         if invite.status != "pending":
             return Response({"error": "Already responded"}, status=400)
@@ -1020,7 +1053,7 @@ class RespondGroupPaymentInviteView(generics.GenericAPIView):
                 property=invite.plan.property,
                 type="group_payment",
                 title="Group payment accepted",
-                message=f"{request.user.username} accepted group payment for {invite.plan.property.title}"
+                message="A member accepted the group payment invite"
             )
 
             return Response({
@@ -1028,7 +1061,6 @@ class RespondGroupPaymentInviteView(generics.GenericAPIView):
                 "redirect": f"/payment/{invite.plan.id}"
             })
 
-        # reject
         invite.status = "rejected"
         invite.save(update_fields=["status"])
 
@@ -1037,12 +1069,10 @@ class RespondGroupPaymentInviteView(generics.GenericAPIView):
             property=invite.plan.property,
             type="group_payment",
             title="Group payment rejected",
-            message=f"{request.user.username} rejected group payment for {invite.plan.property.title}"
+            message="A member rejected the group payment invite"
         )
 
         return Response({"message": "Invite rejected"})
-
-
 
 
 
@@ -1122,3 +1152,25 @@ class MyGroupPaymentInvitesView(generics.ListAPIView):
         print("DEBUG INVITES:", qs)  # 👈 TEMP DEBUG
         return qs
 
+
+
+
+class CreateShareInviteView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, plan_id):
+        plan = get_object_or_404(PurchasePlan, id=plan_id)
+
+        if plan.created_by != request.user:
+            return Response({"error": "Only host can create invite"}, status=403)
+
+        invite = GroupPaymentInvite.objects.create(
+            plan=plan,
+            invited_user=None  # will be set when user accepts
+        )
+
+        link = f"http://localhost:5173/group-invite/{invite.token}"
+
+        return Response({
+            "invite_link": link
+        })
