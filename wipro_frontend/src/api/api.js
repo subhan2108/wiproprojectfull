@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = "https://wiproprojectfull.onrender.com/api";
 
 export const apiFetch = async (endpoint, options = {}) => {
   const token = localStorage.getItem("access_token");
