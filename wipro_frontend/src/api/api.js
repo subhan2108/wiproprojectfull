@@ -1,4 +1,4 @@
-const API_BASE = "https://wiproprojectfull.onrender.com/api";
+const API_BASE = "https://wiproadmin.onrender.com/api";
 
 export const apiFetch = async (endpoint, options = {}) => {
   const token = localStorage.getItem("access_token");
