@@ -7,12 +7,12 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
     path('api/properties/', include('properties.urls')),
-    path("api/wallet/", include("wallet.urls")),
+    path("api/", include("wallet.urls")),
     path('api/investments/', include('investments.urls')),
     path('api/loans/', include('loans.urls')),
-    path('api/notifications/', include('notifications.urls')),
+    path('api/', include('notifications.urls')),
     path("api/dashboard/", include("dashboard.urls")),
-    path("api/committees/", include("committees.urls")),
+    path("api/", include("committees.urls")),
 
 
 

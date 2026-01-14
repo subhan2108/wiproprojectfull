@@ -23,6 +23,10 @@ import WalletDashboard from "./pages/Wallet-Dashboard";
 import CommitteeList from "./pages/CommitteeList";
 import CommitteeDetail from "./pages/CommitteeDetail";
 import MyCommittees from "./pages/MyCommittees";
+import JoinSuccess from "./pages/JoinSuccess";
+import PaymentStatus from "./pages/PaymentStatus";
+import PaymentHistory from "./pages/PaymentHistory";
+import AllPaymentPage from "./pages/AllPaymentPage";
 
 
 /* 🔐 Protected Route */
@@ -60,8 +64,40 @@ export const router = createBrowserRouter([
       </Protected>
     ),
   },
+
+
+{
+    path: "/payment-status/:paymentId",
+    element: (
+      <Protected>
+        <PaymentStatus />
+      </Protected>
+    ),
+  },
+
   {
-    path: "/committees/:id",
+    path: "/payment-history/:userCommitteeId",
+    element: (
+      <Protected>
+        <PaymentHistory />
+      </Protected>
+    ),
+  },
+
+ {
+    path: "/pay/:userCommitteeId/:planId",
+    element: (
+      <Protected>
+        <AllPaymentPage />
+      </Protected>
+    ),
+  },
+
+
+
+
+  {
+    path: "/my-committee/:userCommitteeId",
     element: (
       <Protected>
         <CommitteeDetail />
@@ -74,6 +110,16 @@ export const router = createBrowserRouter([
     element: (
       <Protected>
         <MyCommittees />
+      </Protected>
+    ),
+  },
+
+
+  {
+    path: "/join-success/:committeeId",
+    element: (
+      <Protected>
+        <JoinSuccess />
       </Protected>
     ),
   },

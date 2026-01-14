@@ -1,32 +1,41 @@
 from django.db import models
 from datetime import timedelta
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class Committee(models.Model):
-    INVESTMENT_TYPE = (
-        ('daily', 'Daily'),
-        ('monthly', 'Monthly'),
+    name = models.CharField(max_length=100)
+
+    daily_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
     )
+
+    monthly_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    yearly_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    is_active = models.BooleanField(default=True)
+
 
      # 👇 TEMPORARY (to stop Django guessing)
     annual_interest_rate = models.DecimalField(
         max_digits=5,
         decimal_places=2,
         default=15
-    )
-
-    name = models.CharField(max_length=100)
-    investment_type = models.CharField(
-    max_length=10,
-    choices=INVESTMENT_TYPE,
-    default='daily'
-)
-
-    investment_amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
     )
 
     duration_months = models.IntegerField(default=12)
@@ -71,12 +80,13 @@ class UserCommittee(models.Model):
     roi_unlock_date = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
+        if not self.joined_at:
+            self.joined_at = timezone.now()
+
         if not self.roi_unlock_date:
             self.roi_unlock_date = self.joined_at + timedelta(days=365)
-        super().save(*args, **kwargs)
 
-    def __str__(self):
-        return f"{self.user.username} - {self.committee.name}"
+        super().save(*args, **kwargs)
 
 
 class Investment(models.Model):
@@ -107,3 +117,80 @@ class Withdrawal(models.Model):
 
     def __str__(self):
         return f"{self.amount} ({'ROI' if self.is_roi else 'Principal'})"
+
+
+
+
+class PaymentPlan(models.Model):
+    PLAN_TYPE_CHOICES = (
+        ("daily", "Daily"),
+        ("monthly", "Monthly"),
+        ("yearly", "Yearly"),
+    )
+
+    name = models.CharField(max_length=100)
+    plan_type = models.CharField(max_length=10, choices=PLAN_TYPE_CHOICES)
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # interval in days (1 = daily, 30 = monthly, 365 = yearly)
+    interval_days = models.PositiveIntegerField()
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - ₹{self.amount}"
+
+
+
+
+
+class CommitteePaymentPlan(models.Model):
+    committee = models.ForeignKey(
+        Committee,
+        on_delete=models.CASCADE,
+        related_name="payment_plans"
+    )
+    plan = models.ForeignKey(PaymentPlan, on_delete=models.CASCADE)
+
+    
+    
+    payment_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    interval = models.PositiveIntegerField(help_text="Days", default=0)
+    
+
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.committee.name} - {self.plan.name}"
+
+
+
+
+from django.utils.timezone import now
+from datetime import timedelta
+
+class UserCommitteePlan(models.Model):
+    user_committee = models.OneToOneField(
+        UserCommittee,
+        on_delete=models.CASCADE,
+        related_name="active_plan"
+    )
+
+    plan = models.ForeignKey(PaymentPlan, on_delete=models.PROTECT)
+
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+    next_due_at = models.DateTimeField(default=now)
+    is_active = models.BooleanField(default=True)
+
+    next_payment_due = models.DateTimeField()
+    last_payment_at = models.DateTimeField(null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if not self.next_payment_due:
+            self.next_payment_due = now() + timedelta(days=self.plan.interval_days)
+        super().save(*args, **kwargs)

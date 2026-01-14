@@ -30,3 +30,124 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+
+
+from django.db import models
+from django.contrib.auth.models import User
+
+class Notification(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notifications"
+    )
+    title = models.CharField(max_length=100)
+    message = models.TextField()
+
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
+
+
+
+# notifications/models.py
+from django.db import models
+from django.contrib.auth.models import User
+from committees.models import Committee, PaymentPlan
+from committees.models import UserCommittee
+
+class DueNotification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    committee = models.ForeignKey(Committee, on_delete=models.CASCADE, null=True, blank=True)
+    plan = models.ForeignKey(PaymentPlan, on_delete=models.CASCADE)
+
+    user_committee = models.ForeignKey(
+        UserCommittee,
+        on_delete=models.CASCADE,
+        null=True,          # 👈 TEMPORARY
+        blank=True   
+    )
+
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+
+    repeat_after_minutes = models.PositiveIntegerField(
+        help_text="Notify user every X minutes if unpaid"
+    )
+
+    last_notified_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Due ₹{self.amount} - {self.user}"
+
+
+
+
+# notifications/models.py
+from django.db import models
+from django.contrib.auth.models import User
+
+class DueResponse(models.Model):
+    ACTION_CHOICES = (
+        ("pay_now", "Pay Now"),
+        ("pay_later", "Pay Later"),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    due_notification = models.ForeignKey(
+        "DueNotification",
+        on_delete=models.CASCADE,
+        related_name="responses"
+    )
+
+    committee = models.ForeignKey(
+        "committees.Committee",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    plan = models.ForeignKey(
+        "committees.PaymentPlan",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+     # ✅ FIX IS HERE
+    action = models.CharField(
+        max_length=20,
+        choices=ACTION_CHOICES
+    )
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} → {self.action}"
+
+
+
+
+
+
+
+# notifications/models.py
+
+class CommitteePaymentDue(models.Model):
+    committee = models.ForeignKey(Committee, on_delete=models.CASCADE)
+    plan = models.ForeignKey(PaymentPlan, on_delete=models.CASCADE)
+
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    repeat_after_minutes = models.PositiveIntegerField(default=60)
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.committee.name} - {self.plan.name} - ₹{self.amount}"
