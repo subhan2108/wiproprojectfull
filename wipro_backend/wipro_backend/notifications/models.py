@@ -128,6 +128,14 @@ class DueResponse(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "due_notification"],
+                name="unique_user_due_response"
+            )
+        ]
+
     def __str__(self):
         return f"{self.user} → {self.action}"
 

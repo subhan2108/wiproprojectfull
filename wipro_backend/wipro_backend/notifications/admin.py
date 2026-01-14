@@ -82,15 +82,15 @@ class DueResponseAdmin(admin.ModelAdmin):
 
 # notifications/admin.py
 
-@admin.register(CommitteePaymentDue)
-class CommitteePaymentDueAdmin(admin.ModelAdmin):
-    list_display = (
-        "committee",
-        "plan",
-        "amount",
-        "repeat_after_minutes",
-        "is_active",
-        "created_at",
-    )
+#@admin.register(CommitteePaymentDue)
+#class CommitteePaymentDueAdmin(admin.ModelAdmin):
+#    list_display = (
+#        "committee",
+#        "plan",
+#        "amount",
+#        "repeat_after_minutes",
+#        "is_active",
+#        "created_at",
+#    )
 
-    list_filter = ("committee", "plan", "is_active")
+#    list_filter = ("committee", "plan", "is_active")
