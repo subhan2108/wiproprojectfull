@@ -152,7 +152,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://wiproprojectfull.vercel.app",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
 
 
 
