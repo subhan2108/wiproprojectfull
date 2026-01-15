@@ -60,6 +60,8 @@ from decimal import Decimal
 @admin.register(Committee)
 class CommitteeAdmin(admin.ModelAdmin):
 
+   
+   
     readonly_fields = (
         "yearly_total_invested",
         "yearly_roi_amount",
@@ -79,6 +81,26 @@ class CommitteeAdmin(admin.ModelAdmin):
             "fields": (
                 "total_slots",
                 "filled_slots",
+            )
+        }),
+
+        ("💰 Daily Plan", {
+            "fields": (
+                "daily_amount",
+            )
+        }),
+
+        ("💰 Monthly Plan", {
+            "fields": (
+                "monthly_amount",
+            )
+        }),
+
+        ("💰 Yearly Plan", {
+            "fields": (
+                "yearly_amount",
+                "duration_months",
+                "roi_percent",
             )
         }),
 
