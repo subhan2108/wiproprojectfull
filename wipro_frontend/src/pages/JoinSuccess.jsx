@@ -11,7 +11,7 @@ export default function JoinSuccess() {
 
       <button
         style={btnStyle}
-        onClick={() => navigate(`/committees/${committeeId}`)}
+        onClick={() => navigate(`/my-committees`)}
       >
         Go to Committee Page
       </button>
