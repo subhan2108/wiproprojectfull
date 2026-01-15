@@ -96,13 +96,7 @@ class CommitteeAdmin(admin.ModelAdmin):
             )
         }),
 
-        ("💰 Yearly Plan", {
-            "fields": (
-                "yearly_amount",
-                "duration_months",
-                "roi_percent",
-            )
-        }),
+        
 
         ("Yearly Investment", {
             "fields": (
