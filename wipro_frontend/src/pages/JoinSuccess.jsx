@@ -9,7 +9,12 @@ export default function JoinSuccess() {
       <h2 style={{ color: "#16a34a" }}>🎉 Successfully Joined!</h2>
       <p>You have successfully joined the committee.</p>
 
-      <h3 style={{ marginTop: 30 }}>How do you want to pay?</h3>
+      <button
+        style={btnStyle}
+        onClick={() => navigate(`/committees/${committeeId}`)}
+      >
+        Go to Committee Page
+      </button>
 
       
     </div>
