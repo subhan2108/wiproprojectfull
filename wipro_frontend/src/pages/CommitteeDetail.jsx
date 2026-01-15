@@ -217,6 +217,74 @@ const handleCommitteeDuePayNow = async (d) => {
         ))}
       </div>
 
+      {/* 🔥 INVEST / WITHDRAW ACTION ROW */}
+<div
+  style={{
+    marginTop: 30,
+    padding: "16px 20px",
+    borderRadius: 10,
+    border: "1px solid #e5e7eb",
+    background: "#f8fafc",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 16,
+    flexWrap: "wrap",
+  }}
+>
+  <div>
+    <h3 style={{ margin: 0 }}>Quick Actions</h3>
+    <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: 14 }}>
+      You can invest or withdraw anytime from this committee
+    </p>
+  </div>
+
+  <div style={{ display: "flex", gap: 12 }}>
+    {/* 💰 INVEST */}
+    <button
+      onClick={() => {
+        if (!plans.length) {
+          alert("No payment plan available");
+          return;
+        }
+
+        // 👉 Use first plan as default invest plan
+        navigate(`/pay/${userCommitteeId}/${plans[0].id}`);
+      }}
+      style={{
+        padding: "10px 18px",
+        background: "#16a34a",
+        color: "#fff",
+        border: "none",
+        borderRadius: 8,
+        cursor: "pointer",
+        fontWeight: 600,
+      }}
+    >
+      💰 Invest Now
+    </button>
+
+    {/* ⬇ WITHDRAW */}
+    <button
+      onClick={() => {
+        alert("Withdraw flow coming next 🚀");
+      }}
+      style={{
+        padding: "10px 18px",
+        background: "#2563eb",
+        color: "#fff",
+        border: "none",
+        borderRadius: 8,
+        cursor: "pointer",
+        fontWeight: 600,
+      }}
+    >
+      ⬇ Withdraw
+    </button>
+  </div>
+</div>
+
+
       {/* 🔔 ADMIN MESSAGES */}
       <div style={{ marginTop: 50 }}>
         <h3>Messages from Admin</h3>

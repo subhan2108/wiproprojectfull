@@ -175,6 +175,15 @@ from wallet.models import PaymentMethod, PaymentTransaction
 from .models import UserCommittee
 
 
+from django.http import JsonResponse
+from django.db.models import Sum
+from rest_framework.decorators import api_view
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from wallet.models import PaymentMethod, PaymentTransaction
+from committees.models import UserCommittee
+
+
 @api_view(["GET"])
 def committee_detail(request, user_committee_id):
     # 🔐 JWT AUTH
@@ -192,24 +201,44 @@ def committee_detail(request, user_committee_id):
     except UserCommittee.DoesNotExist:
         return JsonResponse({"error": "Not found"}, status=404)
 
-    # 💰 INVESTMENT STATS
-    invested = uc.total_invested or 0
-    roi = invested * (uc.committee.roi_percent / 100)
-    total_after_year = invested + roi
+    # ===============================
+    # 💰 FINANCIAL CALCULATIONS
+    # ===============================
 
-    withdrawals = PaymentTransaction.objects.filter(
+    # ✅ Total invested (approved only)
+    total_invested = PaymentTransaction.objects.filter(
+        user_committee=uc,
+        transaction_type="investment",
+        status="approved"
+    ).aggregate(total=Sum("amount"))["total"] or 0
+
+    # ✅ Total withdrawn (approved only)
+    total_withdrawn = PaymentTransaction.objects.filter(
         user_committee=uc,
         transaction_type="withdrawal",
         status="approved"
     ).aggregate(total=Sum("amount"))["total"] or 0
 
+    # ✅ Net invested
+    net_invested = total_invested - total_withdrawn
+
+    # ✅ ROI on NET invested
+    roi_amount = net_invested * (uc.committee.roi_percent / 100)
+
+    # ✅ Final amount after 1 year
+    total_after_year = net_invested + roi_amount
+
+    # ===============================
     # 💳 PAYMENT METHODS
+    # ===============================
     payment_methods = PaymentMethod.objects.filter(
         is_active=True,
         for_investment=True
     )
 
-    # 🔔 PAYMENT STATUS MESSAGES (SOURCE OF TRUTH)
+    # ===============================
+    # 🔔 PAYMENT STATUS MESSAGES
+    # ===============================
     payments = PaymentTransaction.objects.filter(
         user_committee=uc
     ).order_by("-created_at")
@@ -224,12 +253,16 @@ def committee_detail(request, user_committee_id):
                 "created_at": p.created_at.strftime("%Y-%m-%d %H:%M"),
             })
 
+    # ===============================
     # ✅ FINAL RESPONSE
+    # ===============================
     return JsonResponse({
-        "committee_id": uc.committee.id,   # 🔥 REQUIRED
+        "committee_id": uc.committee.id,
         "committee_name": uc.committee.name,
-        "invested": float(invested),
-        "withdrawn": float(withdrawals),
+
+        # 🔥 CORRECT VALUES
+        "invested": float(net_invested),
+        "withdrawn": float(total_withdrawn),
         "expected_after_year": float(total_after_year),
 
         "payment_methods": [
@@ -248,7 +281,6 @@ def committee_detail(request, user_committee_id):
             for pm in payment_methods
         ],
 
-        # 🔥 THIS FIXES YOUR FRONTEND ISSUE
         "payment_messages": payment_messages,
     })
 
