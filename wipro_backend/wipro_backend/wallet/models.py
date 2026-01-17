@@ -147,9 +147,9 @@ class PaymentTransaction(models.Model):
         help_text="Message shown to user after approval/rejection"
     )
 
-    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.PROTECT)
+    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.PROTECT, null=True, blank=True)
 
-    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE)
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE, null=True, blank=True)
     amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -180,3 +180,107 @@ class PaymentTransaction(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.amount} ({self.transaction_type}) - {self.user_committee.committee.name} ({self.status})"
+
+
+
+
+# class PaymentTransaction(models.Model):
+#     CONTEXT_CHOICES = (
+#         ("committee", "Committee"),
+#         ("loan_emi", "Loan EMI"),
+#         ("loan_due", "Loan Due"),
+#         ("wallet", "Wallet"),
+#     )
+
+#     STATUS_CHOICES = (
+#         ("pending", "Pending"),
+#         ("approved", "Approved"),
+#         ("rejected", "Rejected"),
+#         ("overdue", "Overdue"),
+#     )
+
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+#     # 🔹 UNIVERSAL
+#     context = models.CharField(max_length=20, choices=CONTEXT_CHOICES, null=True, blank=True)
+#     reference_id = models.CharField(
+#         max_length=100,
+#         blank=True,
+#         null=True,
+#         help_text="LoanDue ID / Committee ID / etc"
+#     )
+
+#     payment_method = models.ForeignKey(
+#         PaymentMethod,
+#         on_delete=models.PROTECT,
+#         null=True,
+#         blank=True
+#     )
+
+#     amount = models.DecimalField(
+#         max_digits=12,
+#         decimal_places=2,
+#         help_text="Amount to be paid",
+#         null=True,
+#         blank=True
+#     )
+
+#     due_at = models.DateTimeField(null=True, blank=True)
+
+#     status = models.CharField(
+#         max_length=20,
+#         choices=STATUS_CHOICES,
+#         default="pending"
+#     )
+
+#     admin_message = models.TextField(blank=True)
+#     reference_note = models.CharField(max_length=255, blank=True)
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     processed_at = models.DateTimeField(null=True, blank=True)
+
+#     def __str__(self):
+#         return f"{self.user} | {self.context} | {self.amount} | {self.status}"
+
+
+
+
+
+
+from django.db import models
+from django.contrib.auth.models import User
+
+class PaymentRequest(models.Model):
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+
+    purpose = models.CharField(
+        max_length=50,
+        help_text="loan emi / wallet topup / investment"
+    )
+
+    payment_method = models.ForeignKey(
+        "PaymentMethod",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    admin_message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} | {self.amount} | {self.status}"

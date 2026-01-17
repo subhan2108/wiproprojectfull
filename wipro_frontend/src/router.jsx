@@ -27,7 +27,16 @@ import JoinSuccess from "./pages/JoinSuccess";
 import PaymentStatus from "./pages/PaymentStatus";
 import PaymentHistory from "./pages/PaymentHistory";
 import AllPaymentPage from "./pages/AllPaymentPage";
-
+import Home from "./pages/Home";
+import LoanDashboard from "./pages/LoanDashboard";
+import LoanEligibility from "./pages/LoanEligibility";
+import LoanApproved from "./pages/LoanApproved";
+import LoanRejected from "./pages/LoanRejected";
+import LoanApplicationStatus from "./pages/LoanApplicationStatus";
+import MyLoans from "./pages/MyLoans";
+import LoanDetails from "./pages/LoanDetails";
+import CommitteeHistory from "./pages/committeehistory";
+import CommitteePayment from "./pages/committeepayment";
 
 /* 🔐 Protected Route */
 const Protected = ({ children }) => {
@@ -66,6 +75,89 @@ export const router = createBrowserRouter([
   },
 
 
+ {
+    path: "/home",
+    element: (
+      <Protected>
+        <Home />
+      </Protected>
+    ),
+  },
+
+  {
+    path: "/loans",
+    element: (
+      <Protected>
+        <LoanDashboard />
+      </Protected>
+    ),
+  },
+
+ 
+
+
+
+{
+    path: "/loan-eligibility",
+    element: (
+      <Protected>
+        <LoanEligibility />
+      </Protected>
+    ),
+  },
+
+
+  {
+    path: "/loan-approved",
+    element: (
+      <Protected>
+        <LoanApproved />
+      </Protected>
+    ),
+  },
+
+
+  {
+    path: "/loan-rejected",
+    element: (
+      <Protected>
+        <LoanRejected />
+      </Protected>
+    ),
+  },
+
+
+
+  {
+    path: "/loan-application-status",
+    element: (
+      <Protected>
+        <LoanApplicationStatus />
+      </Protected>
+    ),
+  },
+
+
+
+  {
+    path: "/my-loans",
+    element: (
+      <Protected>
+        <MyLoans />
+      </Protected>
+    ),
+  },
+
+  {
+    path: "/loan-details",
+    element: (
+      <Protected>
+        <LoanDetails />
+      </Protected>
+    ),
+  },
+
+
 {
     path: "/payment-status/:paymentId",
     element: (
@@ -76,7 +168,7 @@ export const router = createBrowserRouter([
   },
 
   {
-    path: "/payment-history/:userCommitteeId",
+    path: "/payment-history",
     element: (
       <Protected>
         <PaymentHistory />
@@ -85,10 +177,31 @@ export const router = createBrowserRouter([
   },
 
  {
-    path: "/pay/:userCommitteeId/:planId",
+    path: "/pay",
     element: (
       <Protected>
         <AllPaymentPage />
+      </Protected>
+    ),
+  },
+
+
+
+
+   {
+    path: "/payment-history/:userCommitteeId",
+    element: (
+      <Protected>
+        <CommitteeHistory />
+      </Protected>
+    ),
+  },
+
+ {
+    path: "/pay/:userCommitteeId/:planId",
+    element: (
+      <Protected>
+        <CommitteePayment />
       </Protected>
     ),
   },

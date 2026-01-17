@@ -101,3 +101,74 @@ class PaymentTransactionAdmin(admin.ModelAdmin):
         )
 
     reject_payment.short_description = "Reject payment"
+
+
+
+# @admin.register(PaymentTransaction)
+# class PaymentTransactionAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "user",
+#         "context",          # ✅ NEW
+#         "amount",
+#         "payment_method",
+#         "status",
+#         "due_at",
+#         "created_at",
+#     )
+
+#     list_filter = (
+#         "context",          # ✅ NEW
+#         "status",
+#         "payment_method",
+#     )
+
+#     search_fields = (
+#         "user__username",
+#         "reference_id",
+#     )
+
+#     readonly_fields = (
+#         "created_at",
+#         "processed_at",
+#     )
+
+#     actions = ["approve_payment", "reject_payment"]
+
+
+
+
+from django.contrib import admin
+from django.utils import timezone
+from .models import PaymentRequest
+
+@admin.register(PaymentRequest)
+class PaymentRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "amount",
+        "purpose",
+        "payment_method",
+        "status",
+        "created_at",
+    )
+
+    list_filter = ("status", "purpose")
+    search_fields = ("user__username",)
+
+    actions = ["approve_payment", "reject_payment"]
+
+    def approve_payment(self, request, queryset):
+        queryset.update(
+            status="approved",
+            processed_at=timezone.now()
+        )
+
+    def reject_payment(self, request, queryset):
+        queryset.update(
+            status="rejected",
+            processed_at=timezone.now()
+        )
+
+    approve_payment.short_description = "Approve selected payments"
+    reject_payment.short_description = "Reject selected payments"
+

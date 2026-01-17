@@ -12,5 +12,10 @@ urlpatterns = [
     ),
     path("payment-status/<int:pk>/", payment_status),
     path("payment-history/<int:user_committee_id>/", payment_history),
+    path("pending", MyPendingPaymentsView.as_view(), name="pending-payments"),
+    path("payment-methods/", payment_methods),   # ✅ ADD THIS
+
+    path("payment-history/", MyPaymentHistoryView.as_view()),
+    path("all-payment-request/", CreatePaymentRequestView.as_view()),
 
 ]

@@ -1,0 +1,18 @@
+.wallet-box {
+  background: #fff;
+  padding: 24px;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.wallet-box p {
+  color: #6b7280;
+}
+
+.wallet-box h2 {
+  margin-top: 10px;
+}
+
+.wallet-box.highlight {
+  background: #e9fff3;
+}

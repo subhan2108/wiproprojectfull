@@ -1,35 +1,60 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { apiFetch } from "../api/api";
 
 export default function PaymentPage() {
-  const { userCommitteeId, planId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 🔹 payment_id comes from navigation state
+  const paymentId = location.state?.payment_id;
 
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [openMethodId, setOpenMethodId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [amount, setAmount] = useState("");
+  const [purpose, setPurpose] = useState("");
 
+
+  // 🔐 Guard
+  if (!paymentId) {
+    return <p style={{ padding: 20 }}>Invalid payment request</p>;
+  }
+
+  // 🔹 Load ALL active payment methods
   useEffect(() => {
-    apiFetch(`/committee-detail/${userCommitteeId}/`)
+    apiFetch("/payment-methods/")
       .then((res) => {
-        setPaymentMethods(res.payment_methods);
+        setPaymentMethods(res);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [userCommitteeId]);
+  }, []);
 
+  // 🔹 User confirms payment
   const handlePaymentRequest = async (method) => {
-    await apiFetch("/payment-request/", {
+  if (!amount || !purpose) {
+    alert("Please enter amount and select purpose");
+    return;
+  }
+
+  try {
+    await apiFetch("/all-payment-request/", {
       method: "POST",
       body: JSON.stringify({
-        user_committee_id: userCommitteeId,
+        amount: amount,
+        purpose: purpose,
         payment_method_id: method.id,
       }),
     });
 
-    navigate(`/payment-history/${userCommitteeId}`);
-  };
+    alert("Payment request submitted. Waiting for admin approval.");
+    navigate("/payment-history");
+  } catch (err) {
+    alert(err.error || "Failed to submit payment");
+  }
+};
+
 
   if (loading) return <p style={{ padding: 20 }}>Loading...</p>;
 
@@ -52,7 +77,7 @@ export default function PaymentPage() {
                 overflow: "hidden",
               }}
             >
-              {/* HEADER ROW */}
+              {/* HEADER */}
               <div
                 onClick={() =>
                   setOpenMethodId(isOpen ? null : pm.id)
@@ -69,7 +94,7 @@ export default function PaymentPage() {
                 <div>
                   <h4 style={{ marginBottom: 4 }}>{pm.name}</h4>
                   <p style={{ fontSize: 14, color: "#6b7280" }}>
-                    {pm.type.toUpperCase()}
+                    {pm.method_type.toUpperCase()}
                   </p>
                 </div>
 
@@ -84,7 +109,7 @@ export default function PaymentPage() {
                 </span>
               </div>
 
-              {/* DROPDOWN BODY */}
+              {/* BODY */}
               <div
                 style={{
                   maxHeight: isOpen ? 300 : 0,
@@ -94,49 +119,80 @@ export default function PaymentPage() {
                 }}
               >
                 <div style={{ padding: 16 }}>
-                  {pm.type === "upi" && (
-                    <p>
-                      <b>UPI ID:</b> {pm.details.upi}
-                    </p>
-                  )}
+  {/* AMOUNT */}
+  <label style={{ fontWeight: 600 }}>Amount</label>
+  <input
+    type="number"
+    value={amount}
+    onChange={(e) => setAmount(e.target.value)}
+    placeholder="Enter amount"
+    style={{
+      width: "100%",
+      padding: 10,
+      marginTop: 6,
+      marginBottom: 12,
+      borderRadius: 6,
+      border: "1px solid #d1d5db",
+    }}
+  />
 
-                  {pm.type === "bank" && (
-                    <>
-                      <p>
-                        <b>Bank:</b> {pm.details.bank}
-                      </p>
-                      <p>
-                        <b>Account:</b> {pm.details.account}
-                      </p>
-                      <p>
-                        <b>IFSC:</b> {pm.details.ifsc}
-                      </p>
-                    </>
-                  )}
+  {/* PURPOSE */}
+  <label style={{ fontWeight: 600 }}>Purpose</label>
+  <select
+    value={purpose}
+    onChange={(e) => setPurpose(e.target.value)}
+    style={{
+      width: "100%",
+      padding: 10,
+      marginTop: 6,
+      marginBottom: 16,
+      borderRadius: 6,
+      border: "1px solid #d1d5db",
+    }}
+  >
+    <option value="">Select purpose</option>
+    <option value="loan emi">Loan EMI</option>
+    <option value="loan due">Loan Due</option>
+    <option value="investment">Investment</option>
+    <option value="wallet topup">Wallet Top-up</option>
+  </select>
 
-                  {pm.type === "usdt" && (
-                    <p>
-                      <b>USDT Address:</b> {pm.details.usdt}
-                    </p>
-                  )}
+  {/* PAYMENT DETAILS */}
+  {pm.method_type === "upi" && (
+    <p><b>UPI ID:</b> {pm.upi_id}</p>
+  )}
 
-                  <button
-                    onClick={() => handlePaymentRequest(pm)}
-                    style={{
-                      marginTop: 14,
-                      width: "100%",
-                      padding: 14,
-                      background: "#16a34a",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 8,
-                      fontSize: 16,
-                      cursor: "pointer",
-                    }}
-                  >
-                    I Have Paid
-                  </button>
-                </div>
+  {pm.method_type === "bank" && (
+    <>
+      <p><b>Bank:</b> {pm.bank_name}</p>
+      <p><b>Account:</b> {pm.account_number}</p>
+      <p><b>IFSC:</b> {pm.ifsc_code}</p>
+    </>
+  )}
+
+  {pm.method_type === "usdt" && (
+    <p><b>USDT Address:</b> {pm.usdt_address}</p>
+  )}
+
+  {/* SUBMIT */}
+  <button
+    onClick={() => handlePaymentRequest(pm)}
+    style={{
+      marginTop: 14,
+      width: "100%",
+      padding: 14,
+      background: "#16a34a",
+      color: "#fff",
+      border: "none",
+      borderRadius: 8,
+      fontSize: 16,
+      cursor: "pointer",
+    }}
+  >
+    I Have Paid
+  </button>
+</div>
+
               </div>
             </div>
           );

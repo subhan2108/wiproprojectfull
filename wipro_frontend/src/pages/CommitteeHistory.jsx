@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { apiFetch } from "../api/api";
 
 export default function PaymentHistory() {
+  const { userCommitteeId } = useParams();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
-  
 
   useEffect(() => {
-    apiFetch("/payment-history/")
+    apiFetch(`/payment-history/${userCommitteeId}/`)
       .then((res) => {
         setPayments(res);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [userCommitteeId]);
 
   if (loading) return <p style={{ padding: 20 }}>Loading...</p>;
 
@@ -39,12 +40,8 @@ export default function PaymentHistory() {
             <StatusBadge status={p.status} />
           </div>
 
-          <p><b>Method:</b> {p.payment_method || "—"}</p>
-          <p>
-  <b>Purpose:</b>{" "}
-  {(p.context || "GENERAL").replace("_", " ").toUpperCase()}
-</p>
-
+          <p><b>Method:</b> {p.payment_method}</p>
+          <p><b>Type:</b> {p.transaction_type}</p>
           <p><b>Date:</b> {p.created_at}</p>
 
           {p.admin_message && (
@@ -63,7 +60,6 @@ function StatusBadge({ status }) {
     pending: "#facc15",
     approved: "#22c55e",
     rejected: "#ef4444",
-    overdue: "#f97316",
   };
 
   return (
