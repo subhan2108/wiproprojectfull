@@ -12,12 +12,6 @@ from .models import WalletTransaction, PaymentTransaction
 from .serializers import WalletSerializer, WalletTransactionSerializer
 
 
-class MyWalletView(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = WalletSerializer
-
-    def get_object(self):
-        return self.request.user.wallet
 
 
 class MyWalletTransactionsView(ListAPIView):
@@ -396,3 +390,183 @@ class MyPaymentHistoryView(APIView):
             })
 
         return Response(data)
+
+
+
+
+
+
+
+# wallet/views.py
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def payment_detail(request, pk):
+    try:
+        tx = PaymentTransaction.objects.get(id=pk, user=request.user)
+    except PaymentTransaction.DoesNotExist:
+        return Response({"error": "Not found"}, status=404)
+
+    return Response({
+        "amount": float(tx.amount),
+        "context": tx.context,
+        "reference_id": tx.reference_id,
+    })
+
+
+
+# wallet/views.py
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from wallet.models import *
+
+# @api_view(["GET"])
+# @permission_classes([IsAuthenticated])
+# def wallet_payment_transactions(request):
+#     payments = PaymentTransaction.objects.filter(
+#         user=request.user,
+#         status="approved",
+#         transaction_type__in=["investment", "withdrawal"]
+#     ).order_by("-created_at")
+
+#     payments = (
+#         PaymentRequest.objects
+#         .filter(user=user, status="approved")
+#         .select_related("payment_method")
+#         .order_by("-created_at")
+#     )
+
+#     data = []
+
+#     for p in payments:
+#         # classify earn vs paid
+#         if p.purpose in ["investment", "wallet topup"]:
+#             tx_type = "earn"
+#             amount = float(p.amount)
+#         else:
+#             tx_type = "paid"
+#             amount = -float(p.amount)
+
+
+#     for p in payments:
+#         data.append({
+#             "id": p.id,
+#             "type": p.transaction_type,  # investment / withdrawal
+#             "payment_method": p.payment_method.name if p.payment_method else "-",
+#             "tx_type": tx_type, 
+#             "amount": float(p.amount),
+#             "created_at": p.created_at.strftime("%Y-%m-%d"),
+#         })
+
+#     return Response(data)
+
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from wallet.models import PaymentRequest
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def wallet_payment_transactions(request):
+    user = request.user
+
+    payments = (
+        PaymentRequest.objects
+        .filter(user=user, status="approved")
+        .select_related("payment_method")
+        .order_by("-created_at")
+    )
+
+    data = []
+
+    for p in payments:
+        if p.earned > 0:
+            data.append({
+                "id": p.id,
+                "tx_type": "earn",
+                "payment_method": p.payment_method.name if p.payment_method else "-",
+                "amount": float(p.earned),
+                "created_at": p.created_at.strftime("%Y-%m-%d"),
+            })
+
+        if p.paid > 0:
+            data.append({
+                "id": f"{p.id}-paid",
+                "tx_type": "paid",
+                "payment_method": p.payment_method.name if p.payment_method else "-",
+                "amount": float(p.paid),
+                "created_at": p.created_at.strftime("%Y-%m-%d"),
+            })
+
+    return Response(data)
+
+
+
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def wallet_summary(request):
+    payments = PaymentTransaction.objects.filter(
+        user=request.user,
+        status="approved"
+    )
+
+    total_invested = sum(
+        p.amount for p in payments if p.transaction_type == "investment"
+    )
+
+    total_withdrawn = sum(
+        p.amount for p in payments if p.transaction_type == "withdrawal"
+    )
+
+    balance = total_invested - total_withdrawn
+
+    return Response({
+        "balance": float(balance),
+        "total_deposit": float(total_invested),
+        "total_withdraw": float(total_withdrawn),
+    })
+
+
+
+
+
+
+from wallet.calculations import *
+from wallet.models import Wallet
+
+
+class MyWalletView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        # ensure wallet exists
+        wallet, _ = Wallet.objects.get_or_create(user=user)
+
+        return Response({
+            "total_invested": float(
+                calculate_total_investment_for_user(user)
+            ),
+            "total_withdrawn": float(
+                calculate_total_withdrawal_for_user(user)
+            ),
+            "total_earned": float(
+                calculate_total_earned_for_user(user)
+            ),
+            "total_paid": float(
+                calculate_total_paid_for_user(user)
+            ),
+            "net_balance": float(
+                calculate_net_balance_for_user(user)
+            ),
+
+            "bonus_balance": float(wallet.bonus_balance),  # 👈 NEW
+            
+            "status": wallet.status,
+            "updated_at": wallet.updated_at.strftime("%Y-%m-%d %H:%M"),
+        })

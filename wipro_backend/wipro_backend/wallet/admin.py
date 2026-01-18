@@ -3,30 +3,135 @@ from django.utils import timezone
 
 # Register your models here.
 from django.contrib import admin
-from .models import Wallet, WalletTransaction
+
+from wallet.services import apply_payment_to_admin_wallet
+from .models import *
+
+
+
+# @admin.register(Wallet)
+# class WalletAdmin(admin.ModelAdmin):
+#     list_display = ("user", "balance", "status", "updated_at")
+#     search_fields = ("user__username",)
+#     list_filter = ("status",)
+#     actions = ["freeze_wallet", "unfreeze_wallet"]
+
+
+#     def freeze_wallet(self, request, queryset):
+#         queryset.update(status="frozen")
+
+#     def unfreeze_wallet(self, request, queryset):
+#         queryset.update(status="active")
+
+from wallet.calculations import *
+
+
+@admin.register(WalletTransaction)
+class WalletTransactionAdmin(admin.ModelAdmin):
+    list_display = (
+        "wallet",
+        "tx_type",
+        "amount",
+        "source",
+        "payment_method_used",   # ✅ NEW
+        "status",
+        "created_at",
+    )
+
+    list_filter = ("tx_type", "source", "status")
+    search_fields = ("wallet__user__username",)
+
+    # 🔹 DERIVED PAYMENT METHOD (READ ONLY)
+    def payment_method_used(self, obj):
+        if not obj.reference_id:
+            return "-"
+
+        # Try PaymentTransaction first
+        pt = PaymentTransaction.objects.filter(id=obj.reference_id).first()
+        if pt and pt.payment_method:
+            return pt.payment_method.name
+
+        # Fallback: PaymentRequest
+        pr = PaymentRequest.objects.filter(id=obj.reference_id).first()
+        if pr and pr.payment_method:
+            return pr.payment_method.name
+
+        return "-"
+
+    payment_method_used.short_description = "Payment Method"
 
 
 
 @admin.register(Wallet)
 class WalletAdmin(admin.ModelAdmin):
-    list_display = ("user", "balance", "status", "updated_at")
+    list_display = (
+        "user",
+        "total_invested",
+        "total_withdrawn",
+        "total_earned",
+        "total_paid",
+        "net_balance",
+        "bonus_balance",   # 👈 NEW
+        "payment_methods_used",  # ✅ NEW
+        "status",
+        "updated_at",
+    )
+
     search_fields = ("user__username",)
     list_filter = ("status",)
-    actions = ["freeze_wallet", "unfreeze_wallet"]
+    readonly_fields = (
+        "total_invested",
+        "total_withdrawn",
+        "total_earned",
+        "total_paid",
+        "net_balance",
+        "updated_at",
+    )
+
+    fields = (
+        "user",
+        "bonus_balance",  # 👈 editable
+        "status",
+        "updated_at",
+    )
+
+    # 🔹 CALCULATED FIELDS (READ-ONLY)
+
+    def total_earned(self, obj):
+        return calculate_total_earned_for_user(obj.user)
+
+    def total_paid(self, obj):
+        return calculate_total_paid_for_user(obj.user)
+
+    def total_invested(self, obj):
+        return calculate_total_investment_for_user(obj.user)
+
+    def total_withdrawn(self, obj):
+        return calculate_total_withdrawal_for_user(obj.user)
+    
+    # ✅ THIS IS THE IMPORTANT PART
+    def payment_methods_used(self, obj):
+        methods = (
+            PaymentTransaction.objects
+            .filter(user=obj.user, status="approved", payment_method__isnull=False)
+            .values_list("payment_method__name", flat=True)
+            .distinct()
+        )
+
+        return ", ".join(methods) if methods else "-"
+
+    payment_methods_used.short_description = "Payment Methods Used"
+
+    def net_balance(self, obj):
+        return calculate_net_balance_for_user(obj.user)
+
+    total_invested.short_description = "Total Invested"
+    total_withdrawn.short_description = "Total Withdrawn"
+    total_earned.short_description = "Total Earned"
+    total_paid.short_description = "Total Paid"
+    net_balance.short_description = "Net Balance"
 
 
-    def freeze_wallet(self, request, queryset):
-        queryset.update(status="frozen")
-
-    def unfreeze_wallet(self, request, queryset):
-        queryset.update(status="active")
-
-
-@admin.register(WalletTransaction)
-class WalletTransactionAdmin(admin.ModelAdmin):
-    list_display = ("wallet", "tx_type", "amount", "source", "status", "created_at")
-    list_filter = ("tx_type", "source", "status")
-    search_fields = ("wallet__user__username",)
 
 
 
@@ -77,7 +182,16 @@ class PaymentTransactionAdmin(admin.ModelAdmin):
             tx.processed_at = timezone.now()
             tx.save()
 
-    approve_payment.short_description = "Approve payment"
+    def approve_payment(self, request, queryset):
+        for tx in queryset.filter(status="pending"):
+            tx.status = "approved"
+            tx.processed_at = timezone.now()
+            tx.save(update_fields=["status", "processed_at"])
+
+            # 🔥 THIS IS THE ONLY PLACE MONEY MOVES
+            apply_payment_to_admin_wallet(tx)
+
+    approve_payment.short_description = "Approve selected payments"
 
     def save_model(self, request, obj, form, change):
         if (
@@ -101,6 +215,8 @@ class PaymentTransactionAdmin(admin.ModelAdmin):
         )
 
     reject_payment.short_description = "Reject payment"
+
+
 
 
 
@@ -149,6 +265,8 @@ class PaymentRequestAdmin(admin.ModelAdmin):
         "purpose",
         "payment_method",
         "status",
+        "earned",
+        "paid",
         "created_at",
     )
 
@@ -158,10 +276,11 @@ class PaymentRequestAdmin(admin.ModelAdmin):
     actions = ["approve_payment", "reject_payment"]
 
     def approve_payment(self, request, queryset):
-        queryset.update(
+        queryset.filter(status="pending").update(
             status="approved",
             processed_at=timezone.now()
         )
+    approve_payment.short_description = "Approve selected payment requests"
 
     def reject_payment(self, request, queryset):
         queryset.update(
@@ -169,6 +288,25 @@ class PaymentRequestAdmin(admin.ModelAdmin):
             processed_at=timezone.now()
         )
 
-    approve_payment.short_description = "Approve selected payments"
-    reject_payment.short_description = "Reject selected payments"
+    reject_payment.short_description = "Reject selected payment requests"
 
+
+
+
+# @admin.register(AdminWallet)
+# class AdminWalletAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "user",
+#         "balance",
+#         "total_credit",
+#         "total_debit",
+#         "updated_at"
+#     )
+#     readonly_fields = (
+#         "balance",
+#         "total_credit",
+#         "total_debit",
+#         "updated_at"
+#     )
+
+    

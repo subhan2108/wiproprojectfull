@@ -17,5 +17,10 @@ urlpatterns = [
 
     path("payment-history/", MyPaymentHistoryView.as_view()),
     path("all-payment-request/", CreatePaymentRequestView.as_view()),
+    # wallet/urls.py
+path("payments/<uuid:pk>/", payment_detail),
+path("wallet-payments/", wallet_payment_transactions),
+
+
 
 ]

@@ -16,6 +16,7 @@ class Wallet(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="wallet")
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
+    bonus_balance = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -177,6 +178,23 @@ class PaymentTransaction(models.Model):
     processed_at = models.DateTimeField(blank=True, null=True)
     is_recurring = models.BooleanField(default=False)
 
+    wallet = models.ForeignKey(
+        "Wallet",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payment_transactions"
+    )
+
+    wallet_effect = models.CharField(
+        max_length=10,
+        choices=[("credit", "Credit"), ("debit", "Debit")],
+        null=True,
+        blank=True
+    )
+
+    wallet_synced = models.BooleanField(default=False)
+
 
     def __str__(self):
         return f"{self.user} - {self.amount} ({self.transaction_type}) - {self.user_committee.committee.name} ({self.status})"
@@ -272,6 +290,21 @@ class PaymentRequest(models.Model):
         blank=True
     )
 
+     # 🔥 NEW FIELDS (CORE)
+    earned = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        help_text="Amount added to user's wallet"
+    )
+
+    paid = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        help_text="Amount deducted from user's wallet"
+    )
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -284,3 +317,126 @@ class PaymentRequest(models.Model):
 
     def __str__(self):
         return f"{self.user.username} | {self.amount} | {self.status}"
+
+
+
+
+
+# wallet/models.py
+class AdminWallet(models.Model):
+    """
+    System-level wallet controlled only by admin approvals.
+    Acts as the accounting source of truth.
+    """
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="admin_wallet"
+    )
+
+    total_credit = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0
+    )
+
+    total_debit = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0
+    )
+
+    balance = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0
+    )
+
+    last_synced_payment = models.ForeignKey(
+        "PaymentTransaction",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def recalc_balance(self):
+        self.balance = self.total_credit - self.total_debit
+        self.save(update_fields=["balance"])
+
+    def __str__(self):
+        return f"AdminWallet({self.user.username})"
+
+
+
+# wallet/models.py
+class AdminWallet(models.Model):
+    """
+    System-level wallet controlled only by admin approvals.
+    Acts as the accounting source of truth.
+    """
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="admin_wallet"
+    )
+
+    total_credit = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0
+    )
+
+    total_debit = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0
+    )
+
+    balance = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0
+    )
+
+    last_synced_payment = models.ForeignKey(
+        "PaymentTransaction",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def recalc_balance(self):
+        self.balance = self.total_credit - self.total_debit
+        self.save(update_fields=["balance"])
+
+    def __str__(self):
+        return f"AdminWallet({self.user.username})"
+
+
+
+class AdminWalletEntry(models.Model):
+    admin_wallet = models.ForeignKey(
+        AdminWallet,
+        on_delete=models.CASCADE,
+        related_name="entries"
+    )
+
+    payment = models.ForeignKey(
+        PaymentTransaction,
+        on_delete=models.PROTECT
+    )
+
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    entry_type = models.CharField(
+        max_length=10,
+        choices=[("credit", "Credit"), ("debit", "Debit")]
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("admin_wallet", "payment")

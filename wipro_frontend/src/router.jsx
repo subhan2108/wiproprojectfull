@@ -37,6 +37,9 @@ import MyLoans from "./pages/MyLoans";
 import LoanDetails from "./pages/LoanDetails";
 import CommitteeHistory from "./pages/committeehistory";
 import CommitteePayment from "./pages/committeepayment";
+import Profile from "./components/Profile"
+import Wallet from "./pages/Wallet";
+import ProfileKYC from "./pages/ProfileKYC";
 
 /* 🔐 Protected Route */
 const Protected = ({ children }) => {
@@ -94,7 +97,23 @@ export const router = createBrowserRouter([
   },
 
  
+{
+    path: "/wallet",
+    element: (
+      <Protected>
+        <Wallet />
+      </Protected>
+    ),
+  },
 
+  {
+    path: "/prifile-kyc",
+    element: (
+      <Protected>
+        <ProfileKYC />
+      </Protected>
+    ),
+  },
 
 
 {
@@ -125,6 +144,19 @@ export const router = createBrowserRouter([
       </Protected>
     ),
   },
+
+
+  {
+    path: "/profile",
+    element: (
+      <Protected>
+        <Profile />
+      </Protected>
+    ),
+  },
+
+
+
 
 
 

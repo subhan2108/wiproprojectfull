@@ -94,3 +94,63 @@ class DueResponseAdmin(admin.ModelAdmin):
 #    )
 
 #    list_filter = ("committee", "plan", "is_active")
+
+
+
+
+
+
+from django.contrib import admin
+from .models import UniversalDue, UniversalDueResponse
+
+
+@admin.register(UniversalDue)
+class UniversalDueAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "context",
+        "heading",
+        "amount",
+        "is_active",
+        "is_resolved",
+        "created_at",
+    )
+
+    list_filter = ("context", "is_active", "is_resolved")
+    search_fields = ("user__username", "heading", "description")
+
+    fieldsets = (
+        ("Target User", {
+            "fields": ("user",)
+        }),
+        ("Due Details", {
+            "fields": (
+                "context",
+                "reference_id",
+                "heading",
+                "description",
+                "amount",
+            )
+        }),
+        ("Reminder Settings", {
+            "fields": ("repeat_after_minutes",)
+        }),
+        ("Status", {
+            "fields": ("is_active", "is_resolved")
+        }),
+    )
+
+    readonly_fields = ("created_at",)
+
+
+@admin.register(UniversalDueResponse)
+class UniversalDueResponseAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "due",
+        "action",
+        "created_at",
+    )
+
+    list_filter = ("action",)
+    search_fields = ("user__username",)

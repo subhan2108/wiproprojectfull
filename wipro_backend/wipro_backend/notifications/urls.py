@@ -25,5 +25,8 @@ urlpatterns = [
         name="committee-due-response",
     ),
 
+    path("universal-dues/", universal_dues),
+    path("universal-dues/<int:due_id>/response/", universal_due_response),
+
     
 ]

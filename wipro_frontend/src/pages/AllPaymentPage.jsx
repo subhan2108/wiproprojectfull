@@ -6,8 +6,7 @@ export default function PaymentPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 🔹 payment_id comes from navigation state
-  const paymentId = location.state?.payment_id;
+
 
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [openMethodId, setOpenMethodId] = useState(null);
@@ -16,10 +15,7 @@ export default function PaymentPage() {
   const [purpose, setPurpose] = useState("");
 
 
-  // 🔐 Guard
-  if (!paymentId) {
-    return <p style={{ padding: 20 }}>Invalid payment request</p>;
-  }
+ 
 
   // 🔹 Load ALL active payment methods
   useEffect(() => {
@@ -112,9 +108,9 @@ export default function PaymentPage() {
               {/* BODY */}
               <div
                 style={{
-                  maxHeight: isOpen ? 300 : 0,
-                  overflow: "hidden",
-                  transition: "max-height 0.3s ease",
+                  maxHeight: isOpen ? 500 : 0,
+                  overflow: "auto",
+                  transition: "max-height 0.6s ease",
                   background: "#f9fafb",
                 }}
               >

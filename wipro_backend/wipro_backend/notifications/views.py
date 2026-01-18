@@ -4,7 +4,8 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-from .models import Notification
+from rest_framework.decorators import api_view
+from .models import *
 from .services import send_notification
 
 
@@ -390,4 +391,83 @@ def committee_due_response(request, due_id):
         "success": True,
         "user_committee_id": uc.id,
         "plan_id": committee_due.plan.id,
+    })
+
+
+
+
+
+
+
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import UniversalDue
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def universal_dues(request):
+    dues = (
+        UniversalDue.objects
+        .filter(user=request.user, is_active=True, is_resolved=False)
+        .exclude(responses__user=request.user)
+        .order_by("-created_at")
+    )
+
+    return Response([
+        {
+            "id": d.id,
+            "heading": d.heading,
+            "description": d.description,
+            "amount": d.amount,
+            "context": d.context,
+            "reference_id": d.reference_id,
+        }
+        for d in dues
+    ])
+
+
+
+
+
+
+
+
+
+
+from .models import UniversalDue, UniversalDueResponse
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def universal_due_response(request, due_id):
+    action = request.data.get("action")
+
+    if action not in ["pay_now", "pay_later"]:
+        return Response({"error": "Invalid action"}, status=400)
+
+    due = UniversalDue.objects.get(
+        id=due_id,
+        user=request.user,
+        is_active=True,
+        is_resolved=False
+    )
+
+    UniversalDueResponse.objects.create(
+        user=request.user,
+        due=due,
+        action=action
+    )
+
+    if action == "pay_later":
+        return Response({"success": True})
+
+    # Pay now → frontend will redirect to payment page
+    return Response({
+        "success": True,
+        "amount": due.amount,
+        "context": due.context,
+        "reference_id": due.reference_id,
     })
