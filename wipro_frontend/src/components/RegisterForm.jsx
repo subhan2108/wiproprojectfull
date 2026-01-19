@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Alert from './Alert';
 import './auth.css'
+import { useEffect } from "react";
+
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +20,17 @@ const RegisterForm = () => {
   
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get("ref");
+
+  if (ref) {
+    // store referral code temporarily
+    localStorage.setItem("referral_code", ref);
+  }
+}, []);
+
 
   const showAlert = (message, type = 'info') => {
     setAlert({ show: true, message, type });

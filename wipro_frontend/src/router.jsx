@@ -40,6 +40,7 @@ import CommitteePayment from "./pages/committeepayment";
 import Profile from "./components/Profile"
 import Wallet from "./pages/Wallet";
 import ProfileKYC from "./pages/ProfileKYC";
+import ReferralCard from "./pages/ReferralCard";
 
 /* 🔐 Protected Route */
 const Protected = ({ children }) => {
@@ -111,6 +112,16 @@ export const router = createBrowserRouter([
     element: (
       <Protected>
         <ProfileKYC />
+      </Protected>
+    ),
+  },
+
+
+{
+    path: "/referral",
+    element: (
+      <Protected>
+        <ReferralCard />
       </Protected>
     ),
   },
