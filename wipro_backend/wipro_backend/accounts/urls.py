@@ -1,6 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
+from .views import *
 
 urlpatterns = [
     # Authentication endpoints
@@ -12,4 +13,9 @@ urlpatterns = [
     # User management
     path('profile/', views.UserProfileView.as_view(), name='user_profile'),
     path('change-password/', views.change_password_view, name='change_password'),
+
+    path("kyc/", kyc_view),
+    path("my-referral/", my_referral_link),
+    path("referral-leaderboard/", referral_leaderboard, name="referral-leaderboard"),
+
 ]

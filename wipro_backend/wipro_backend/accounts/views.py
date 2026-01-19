@@ -13,6 +13,8 @@ from .serializers import (
     UserProfileSerializer,
     ChangePasswordSerializer
 )
+from django.contrib.auth.models import User
+from .models import *
 
 class UserRegistrationView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -106,3 +108,109 @@ def change_password_view(request):
                        status=status.HTTP_200_OK)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import UserVerification
+from .serializers import UserVerificationSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from django.contrib.auth.models import User
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def kyc_view(request):
+    user = request.user
+
+    if request.method == "GET":
+        kyc = UserVerification.objects.filter(user=user).first()
+        if not kyc:
+            return Response({"exists": False})
+        return Response({
+            "exists": True,
+            "status": kyc.status,
+            "data": UserVerificationSerializer(kyc).data
+        })
+
+    if request.method == "POST":
+        print("RAW DATA:", request.data)
+        print("FILES:", request.FILES)
+        kyc, created = UserVerification.objects.get_or_create(user=user)
+
+        # 🔥 READ & REMOVE referral_code BEFORE serializer
+        referral_code = request.data.get("referral_code")
+
+        # Make a mutable copy of data
+        data = request.data.copy()
+        data.pop("referral_code", None)
+
+        # 🔹 Apply referral ONLY ONCE
+        if referral_code and not kyc.referred_by:
+            ref = UserReferral.objects.filter(
+                referral_code=referral_code
+            ).select_related("user").first()
+
+            if ref and ref.user != user:
+                kyc.referred_by = ref.user
+                kyc.save(update_fields=["referred_by"])
+
+        serializer = UserVerificationSerializer(
+            kyc,
+            data=data,          # 👈 use cleaned data
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(status="pending")
+
+        return Response(serializer.data)
+
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import UserReferral
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def my_referral_link(request):
+    ref, created = UserReferral.objects.get_or_create(
+        user=request.user
+    )
+
+    return Response({
+        "referral_code": ref.referral_code
+    })
+
+
+
+
+
+
+
+@api_view(["GET"])
+def referral_leaderboard(request):
+    period = request.GET.get("period", "weekly")
+
+    leaderboard = ReferralLeaderboard.objects.filter(period=period)
+
+    data = [
+        {
+            "rank": l.rank,
+            "name": l.user.username,
+            "referrals": l.total_referrals,
+            "amount": l.total_earnings,
+        }
+        for l in leaderboard
+    ]
+
+    return Response(data)

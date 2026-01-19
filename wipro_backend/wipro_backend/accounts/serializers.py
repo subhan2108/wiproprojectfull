@@ -63,3 +63,17 @@ class ChangePasswordSerializer(serializers.Serializer):
         if attrs['new_password'] != attrs['confirm_password']:
             raise serializers.ValidationError("New passwords don't match")
         return attrs
+
+
+
+
+
+
+from rest_framework import serializers
+from .models import UserVerification
+
+class UserVerificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserVerification
+        fields = "__all__"
+        read_only_fields = ["user", "status", "created_at", "updated_at"]

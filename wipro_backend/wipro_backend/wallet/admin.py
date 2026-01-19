@@ -6,6 +6,7 @@ from django.contrib import admin
 
 from wallet.services import apply_payment_to_admin_wallet
 from .models import *
+from .utils import get_referred_by_user, calculate_referral_commission
 
 
 
@@ -66,9 +67,11 @@ class WalletTransactionAdmin(admin.ModelAdmin):
 class WalletAdmin(admin.ModelAdmin):
     list_display = (
         "user",
+        "referred_by",            # ✅ NEW
         "total_invested",
         "total_withdrawn",
         "total_earned",
+        "referral_commission",    # ✅ NEW (1%)
         "total_paid",
         "net_balance",
         "bonus_balance",   # 👈 NEW
@@ -80,9 +83,11 @@ class WalletAdmin(admin.ModelAdmin):
     search_fields = ("user__username",)
     list_filter = ("status",)
     readonly_fields = (
+        "referred_by",
         "total_invested",
         "total_withdrawn",
         "total_earned",
+        "referral_commission",
         "total_paid",
         "net_balance",
         "updated_at",
@@ -90,12 +95,25 @@ class WalletAdmin(admin.ModelAdmin):
 
     fields = (
         "user",
+        "referred_by",
         "bonus_balance",  # 👈 editable
+        "referral_commission",
         "status",
         "updated_at",
     )
 
     # 🔹 CALCULATED FIELDS (READ-ONLY)
+
+    def referred_by(self, obj):
+        ref_user = get_referred_by_user(obj.user)
+        return ref_user.username if ref_user else "-"
+
+    referred_by.short_description = "Referred By"
+
+    def referral_commission(self, obj):
+        return calculate_referral_commission(obj.user)
+
+    referral_commission.short_description = "Referral Commission (1%)"
 
     def total_earned(self, obj):
         return calculate_total_earned_for_user(obj.user)
