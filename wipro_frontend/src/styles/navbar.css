@@ -1,0 +1,104 @@
+/* =========================
+   NAVBAR
+========================= */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #f1faee;
+  border-bottom: 1px solid #e4efe6;
+}
+
+.navbar-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* LEFT */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.navbar-brand {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f1f14;
+}
+
+/* CENTER */
+.navbar-links {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+}
+
+.navbar-links a {
+  font-size: 14.5px;
+  color: #0f1f14;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.navbar-links a:hover {
+  color: #22c55e;
+}
+
+/* RIGHT */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.navbar-actions i {
+  font-size: 16px;
+  color: #0f1f14;
+  cursor: pointer;
+}
+
+.navbar-login {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #0f1f14;
+  text-decoration: none;
+}
+
+.navbar-login:hover {
+  color: #22c55e;
+}
+
+/* CTA Button */
+.navbar-cta {
+  background: #22c55e;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.navbar-cta:hover {
+  background: #16a34a;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 900px) {
+  .navbar-links {
+    display: none;
+  }
+}

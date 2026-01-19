@@ -1,3 +1,5 @@
+
+
 /* Profile Tabs */
 .profile-tabs {
   display: flex;
@@ -555,6 +557,8 @@ h1, h2, h3 {
     margin: 10px 0;
 }
 
+
+
 /* Responsive Styles */
 @media (max-width: 768px) {
     .navbar {
@@ -594,3 +598,41 @@ h1, h2, h3 {
         font-size: 16px;
     }
 }
+
+
+
+/* Center auth pages */
+.auth-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f7f7f7;
+}
+
+
+/* FORCE CENTER LOGIN PAGE */
+.auth-page {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7f7f7;
+  z-index: 1;
+}
+
+
+/* FULL SCREEN CENTERING FOR LOGIN */
+.auth-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f7f7f7;
+}
+
+
+

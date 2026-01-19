@@ -41,6 +41,8 @@ import Profile from "./components/Profile"
 import Wallet from "./pages/Wallet";
 import ProfileKYC from "./pages/ProfileKYC";
 import ReferralCard from "./pages/ReferralCard";
+import MainLayout from "./layouts/MainLayout";
+
 
 /* 🔐 Protected Route */
 const Protected = ({ children }) => {
@@ -54,11 +56,18 @@ const Protected = ({ children }) => {
 
 export const router = createBrowserRouter([
 
+   { path: "/login", element: <LoginForm /> },
+  { path: "/register", element: <RegisterForm /> },
+
+   {
+    path: "/",
+    element: <MainLayout />,   // 👈 NAVBAR ATTACHED HERE
+    children: [
+
   
   { path: "/", element: <Properties /> },
 
-  { path: "/login", element: <LoginForm /> },
-  { path: "/register", element: <RegisterForm /> },
+ 
 
   {
     path: "/dashboard",
@@ -72,9 +81,9 @@ export const router = createBrowserRouter([
   {
     path: "/committees",
     element: (
-      <Protected>
+      
         <CommitteeList />
-      </Protected>
+      
     ),
   },
 
@@ -82,9 +91,7 @@ export const router = createBrowserRouter([
  {
     path: "/home",
     element: (
-      <Protected>
         <Home />
-      </Protected>
     ),
   },
 
@@ -415,4 +422,6 @@ export const router = createBrowserRouter([
 
   /* 🔥 Catch-all */
   { path: "*", element: <Navigate to="/" replace /> },
+  ],
+  },
 ]);

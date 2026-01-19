@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api/api";
 import PropertyCard from "../components/PropertyCard";
-import "../styles/main.css"
+import "../styles/property.css";
 
 export default function Properties() {
   const [properties, setProperties] = useState([]);
@@ -11,7 +11,6 @@ export default function Properties() {
   useEffect(() => {
     apiFetch("/properties/")
       .then((data) => {
-        // ✅ DRF pagination fix
         setProperties(data.results || []);
         setLoading(false);
       })
@@ -24,19 +23,43 @@ export default function Properties() {
   if (loading) return <p>Loading properties...</p>;
 
   return (
-     <div className="properties-page">
+    <div className="properties-page">
+      {/* FULL WIDTH HEADER */}
+      {/* MARKET HEADER */}
+<div className="market-header">
+  <div className="market-header-inner">
+
+    {/* LEFT */}
+    <div className="market-title">
+      <h1>
+        Market <br /><span>Listings</span>
+      </h1>
+      <p>Discover exclusive verified properties.</p>
+    </div>
+
+    {/* RIGHT */}
+    <div className="market-actions">
+      <div className="market-search">
+        <i className="bi bi-search"></i>
+        <input
+          type="text"
+          placeholder="Search city, area or project..."
+        />
+      </div>
+
+      <button className="market-filter">
+        All Types <i className="bi bi-chevron-down"></i>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+
+      {/* PROPERTY GRID */}
       <div className="properties-container">
-
-        {/* Header */}
-        <div className="properties-header">
-          <h1>Property Marketplace</h1>
-          <p>Browse, buy, or invest in premium properties</p>
-        </div>
-
-        {/* Error */}
         {error && <p className="properties-error">{error}</p>}
 
-        {/* Empty State */}
         {properties.length === 0 ? (
           <div className="properties-empty">
             <p>No properties found</p>
@@ -48,7 +71,6 @@ export default function Properties() {
             ))}
           </div>
         )}
-
       </div>
     </div>
   );

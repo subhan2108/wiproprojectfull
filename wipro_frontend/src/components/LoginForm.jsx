@@ -89,7 +89,8 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="auth-container">
+    <div className="auth-page">
+      <div className="auth-container">
       <div className="auth-header">
         <h2 className="auth-title">Welcome Back!</h2>
         <p className="auth-subtitle">Sign in to your account</p>
@@ -165,6 +166,7 @@ const LoginForm = () => {
       {/* Demo credentials for testing */}
       <div className="demo-info">
         <p><strong>Demo:</strong> Create a new account or use existing credentials</p>
+      </div>
       </div>
     </div>
   );
