@@ -179,3 +179,135 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+
+.form-alert.error {
+  background: #ffe5e5;
+  color: #b30000;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.input-error {
+  border: 1px solid #e53935 !important;
+}
+
+.error-text {
+  color: #e53935;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+
+.input-error {
+  border: 1px solid #e53935 !important;
+}
+
+.error-text {
+  color: #e53935;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.form-alert.error {
+  background: #ffe6e6;
+  color: #b30000;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.helper-text {
+  font-size: 11px;
+  color: #777;
+  margin-top: 4px;
+  display: block;
+}
+
+
+/* PAGE CENTERING */
+.kyc-status-page {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7fbf7;
+  padding: 20px;
+}
+
+/* CARD */
+.kyc-status-card {
+  background: #ffffff;
+  max-width: 460px;
+  width: 100%;
+  padding: 48px 40px;
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08);
+}
+
+/* STATUS COLORS */
+.kyc-status-card.pending {
+  border-top: 6px solid #f4b400;
+}
+
+.kyc-status-card.approved {
+  border-top: 6px solid #2e7d32;
+}
+
+.kyc-status-card.rejected {
+  border-top: 6px solid #d32f2f;
+}
+
+/* ICON */
+.status-icon {
+  font-size: 50px;
+  margin-bottom: 16px;
+}
+
+/* TITLE */
+.kyc-status-card h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #1b1b1b;
+}
+
+/* TEXT */
+.status-text {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+/* INFO (PENDING ONLY) */
+.status-info {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 28px;
+}
+
+.status-info div {
+  margin-bottom: 6px;
+}
+
+/* BUTTON */
+.status-btn {
+  padding: 12px 22px;
+  border-radius: 10px;
+  border: none;
+  background: #2e7d32;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.status-btn:hover {
+  opacity: 0.9;
+}
