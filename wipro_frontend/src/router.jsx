@@ -35,8 +35,8 @@ import LoanRejected from "./pages/LoanRejected";
 import LoanApplicationStatus from "./pages/LoanApplicationStatus";
 import MyLoans from "./pages/MyLoans";
 import LoanDetails from "./pages/LoanDetails";
-import CommitteeHistory from "./pages/committeehistory";
-import CommitteePayment from "./pages/committeepayment";
+import CommitteeHistory from "./pages/CommitteeHistory";
+import CommitteePayment from "./pages/CommitteePayment";
 import Profile from "./components/Profile"
 import Wallet from "./pages/Wallet";
 import ProfileKYC from "./pages/ProfileKYC";
