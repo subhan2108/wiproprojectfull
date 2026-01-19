@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/api";
-import "../styles/profilekyc.css";
+import "../styles/ProfileKYC.css";
 
 export default function KYC() {
   const navigate = useNavigate();
