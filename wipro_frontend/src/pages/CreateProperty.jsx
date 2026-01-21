@@ -2,6 +2,7 @@ import { useState } from "react";
 import { apiFetch } from "../api/api";
 import "./create-property.css";
 import { useNavigate } from "react-router-dom";
+import MiniVerticalNav from "../components/MiniVerticalNav";
 
 
 export default function CreateProperty() {
@@ -164,6 +165,10 @@ const uploadImages = async () => {
   return (
     <div className="create-property">
       <h2>Create Property</h2>
+
+      <div className="market-sidebar">
+  <MiniVerticalNav />
+</div>
 
       <form onSubmit={submitProperty}>
         <input name="title" placeholder="Title" onChange={handleChange} required />

@@ -1,21 +1,26 @@
-/* =========================
-   NAVBAR
-========================= */
-.navbar {
-  position: sticky;
-  top: 0;
+/* WRAPPER */
+.navbar-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
   z-index: 1000;
-  background: #f1faee;
-  border-bottom: 1px solid #e4efe6;
+      margin-left: 3rem;
+    margin-right: 3rem;
 }
 
-.navbar-container {
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: 14px 20px;
+/* PILL CONTAINER */
+.navbar-pill {
+  width: 95%;
+  max-width: 1400px;
+  height: 72px;
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 0 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
 }
 
 /* LEFT */
@@ -26,79 +31,63 @@
 }
 
 .navbar-logo {
-  width: 36px;
   height: 36px;
-  object-fit: contain;
 }
 
-.navbar-brand {
-  font-size: 18px;
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.brand-name {
+  font-size: 14px;
   font-weight: 700;
-  color: #0f1f14;
+  letter-spacing: 0.5px;
+}
+
+.brand-sub {
+  font-size: 10px;
+  color: #6b7280;
 }
 
 /* CENTER */
 .navbar-links {
-  display: flex;
-  gap: 28px;
   list-style: none;
+  display: flex;
+  gap: 26px;
 }
 
 .navbar-links a {
-  font-size: 14.5px;
-  color: #0f1f14;
-  text-decoration: none;
-  font-weight: 500;
+     text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    color: #111827;
+    padding: 6px 0;
 }
 
-.navbar-links a:hover {
-  color: #22c55e;
+
+.navbar-links a.active {
+  font-weight: 700;
 }
 
 /* RIGHT */
-.navbar-actions {
+.navbar-user {
   display: flex;
   align-items: center;
-  gap: 18px;
-}
-
-.navbar-actions i {
-  font-size: 16px;
-  color: #0f1f14;
+  gap: 6px;
   cursor: pointer;
 }
 
-.navbar-login {
-  font-size: 14.5px;
-  font-weight: 500;
-  color: #0f1f14;
-  text-decoration: none;
-}
-
-.navbar-login:hover {
-  color: #22c55e;
-}
-
-/* CTA Button */
-.navbar-cta {
+.user-avatar {
+  width: 36px;
+  height: 36px;
   background: #22c55e;
-  color: #ffffff;
-  padding: 8px 16px;
-  border-radius: 8px;
+  color: white;
+  border-radius: 50%;
   font-size: 14px;
   font-weight: 600;
-  text-decoration: none;
-}
-
-.navbar-cta:hover {
-  background: #16a34a;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-@media (max-width: 900px) {
-  .navbar-links {
-    display: none;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

@@ -42,6 +42,11 @@ import Wallet from "./pages/Wallet";
 import ProfileKYC from "./pages/ProfileKYC";
 import ReferralCard from "./pages/ReferralCard";
 import MainLayout from "./layouts/MainLayout";
+import MyPropertiesPage from "./pages/MyPropertiesPage";
+import EditPropertyPage from "./pages/EditPropertyPage";
+import PropertyRequestForm from "./pages/PropertyRequestForm";
+import MyPropertyRequests from "./pages/MyPropertyRequests";
+
 
 
 /* 🔐 Protected Route */
@@ -104,7 +109,48 @@ export const router = createBrowserRouter([
     ),
   },
 
- 
+ {
+    path: "/property/:propertyId/request",
+    element: (
+      <Protected>
+        <PropertyRequestForm />
+      </Protected>
+    ),
+  },
+
+
+
+
+   {
+    path: "/my-requests",
+    element: (
+      <Protected>
+        <MyPropertyRequests/>
+      </Protected>
+    ),
+  },
+  
+
+ {
+    path: "/my-properties",
+    element: (
+      <Protected>
+        <MyPropertiesPage />
+      </Protected>
+    ),
+  },
+
+
+  {
+    path: "/properties/edit/:id",
+    element: (
+      <Protected>
+        <EditPropertyPage />
+      </Protected>
+    ),
+  },
+
+
 {
     path: "/wallet",
     element: (
@@ -248,7 +294,7 @@ export const router = createBrowserRouter([
   },
 
  {
-    path: "/pay/:userCommitteeId/:planId",
+    path: "/pay/:userCommitteeId",
     element: (
       <Protected>
         <CommitteePayment />

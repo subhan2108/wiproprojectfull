@@ -39,43 +39,48 @@ export default function JoinCommitteeModal({ committee, onClose }) {
         <p className="subtitle">Confirm your investment details</p>
 
         <div className="summary-box">
-          {committee.daily_amount && (
-            <div className="row">
-              <span>Daily Investment</span>
-              <strong>₹{committee.daily_amount}</strong>
-            </div>
-          )}
+  {committee.daily_amount && (
+    <div className="row">
+      <span>Daily Investment</span>
+      <strong>₹{Number(committee.daily_amount).toLocaleString("en-IN")}</strong>
+    </div>
+  )}
 
-          {committee.monthly_amount && (
-            <div className="row">
-              <span>Monthly Investment</span>
-              <strong>₹{committee.monthly_amount}</strong>
-            </div>
-          )}
-          <div className="row">
-    <span>Yearly Investment</span>
-    <strong>₹{committee.yearly_amount}</strong>
+  {committee.monthly_amount && (
+    <div className="row">
+      <span>Monthly Investment</span>
+      <strong>₹{Number(committee.monthly_amount).toLocaleString("en-IN")}</strong>
+    </div>
+  )}
+
+  <div className="row">
+    <span>Duration</span>
+    <strong>{committee.duration_months} months</strong>
   </div>
 
-          <div className="row">
-            <span>Duration</span>
-            <strong>{committee.duration_months} months</strong>
-          </div>
-
-          <div className="row total">
-  <span>Total Return</span>
-  <strong className="green">
-    ₹{committee.expected_total_return}
-  </strong>
+  <div className="row total">
+    <span>Total Return</span>
+    <strong className="green">
+      ₹{Number(committee.expected_total_return).toLocaleString("en-IN")}
+    </strong>
+  </div>
 </div>
 
-        </div>
 
         <ul className="benefits">
-          <li>✅ Guaranteed {committee.roi_percent}% returns</li>
-          <li>🏦 Eligible for loan after 6 months</li>
-          <li>🔒 100% secure and transparent</li>
-        </ul>
+  <li>
+    <i className="bi bi-check-circle-fill"></i>
+    Guaranteed {committee.roi_percent}% returns
+  </li>
+  <li>
+    <i className="bi bi-bank"></i>
+    Eligible for loan after 3 months
+  </li>
+  <li>
+    <i className="bi bi-shield-check"></i>
+    100% secure and transparent
+  </li>
+</ul>
 
           {error && <p style={{ color: "red" }}>{error}</p>}
 

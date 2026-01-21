@@ -33,6 +33,10 @@ class PropertyListCreateView(generics.ListCreateAPIView):
             return PropertyCreateUpdateSerializer
         return PropertyListSerializer
     
+    def get_serializer_context(self):
+       return {"request": self.request}
+
+    
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
@@ -1174,3 +1178,219 @@ class CreateShareInviteView(generics.GenericAPIView):
         return Response({
             "invite_link": link
         })
+
+
+
+class PropertyImageDeleteView(generics.DestroyAPIView):
+    queryset = PropertyImage.objects.all()
+    permission_classes = [IsAuthenticated]
+
+
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from .models import PropertyRequest, Property
+from .serializers import PropertyRequestSerializer
+
+
+# CREATE REQUEST (FORM SUBMIT)
+class CreatePropertyRequestView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PropertyRequestSerializer
+
+    def perform_create(self, serializer):
+        property_id = self.kwargs["property_id"]
+        prop = get_object_or_404(Property, id=property_id)
+
+        serializer.save(
+            user=self.request.user,
+            property=prop,
+            status="pending"
+        )
+
+
+# LIST MY REQUESTS (Pending / Approved / Rejected)
+class MyPropertyRequestsView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PropertyRequestSerializer
+
+    def get_queryset(self):
+        return PropertyRequest.objects.filter(user=self.request.user)
+
+
+
+
+
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import PermissionDenied
+
+from .models import Property, PropertyImage
+from .serializers import PropertyImageSerializer
+
+
+# 🔹 LIST IMAGES FOR A PROPERTY
+class PropertyImageListView(generics.ListAPIView):
+    serializer_class = PropertyImageSerializer
+
+    def get_queryset(self):
+        return PropertyImage.objects.filter(
+            property_id=self.kwargs["property_id"]
+        )
+    
+class SetPrimaryPropertyImageView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = PropertyImage.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        img = self.get_object()
+        if img.property.owner != request.user:
+            raise PermissionDenied()
+
+        PropertyImage.objects.filter(property=img.property).update(is_primary=False)
+        img.is_primary = True
+        img.save()
+
+        return Response({"message": "Primary image set"})
+
+
+class PropertyImageDeleteView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = PropertyImage.objects.all()
+
+# 🔹 UPLOAD MULTIPLE IMAGES
+class PropertyImageUploadView(generics.CreateAPIView):
+    serializer_class = PropertyImageSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def create(self, request, *args, **kwargs):
+        property_id = kwargs["property_id"]
+        prop = get_object_or_404(Property, id=property_id)
+
+        # 🔐 Only owner can upload
+        if prop.owner != request.user:
+            raise PermissionDenied("You can upload images only for your own property")
+
+        images = request.FILES.getlist("images")
+        if not images:
+            return Response(
+                {"error": "No images provided"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        uploaded = []
+        for img in images:
+            serializer = self.get_serializer(
+                data={"image": img},
+                context={"request": request}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save(property=prop)
+            uploaded.append(serializer.data)
+
+        return Response(
+            {
+                "message": f"{len(uploaded)} images uploaded successfully",
+                "images": uploaded,
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+
+# 🔹 SET PRIMARY IMAGE
+class SetPrimaryPropertyImageView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PropertyImageSerializer
+    queryset = PropertyImage.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        image = self.get_object()
+
+        if image.property.owner != request.user:
+            raise PermissionDenied("Only owner can set primary image")
+
+        # Reset others
+        PropertyImage.objects.filter(
+            property=image.property
+        ).update(is_primary=False)
+
+        image.is_primary = True
+        image.save(update_fields=["is_primary"])
+
+        return Response({"message": "Primary image updated"})
+
+
+# 🔹 DELETE IMAGE
+class PropertyImageDeleteView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = PropertyImage.objects.all()
+
+    def perform_destroy(self, instance):
+        if instance.property.owner != self.request.user:
+            raise PermissionDenied("Only owner can delete images")
+        instance.delete()
+
+
+
+
+
+
+
+# views.py
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import PermissionDenied
+
+from .models import Property, PropertyImage
+from .serializers import PropertyImageUploadSerializer
+
+
+class PropertyImageUploadView(generics.CreateAPIView):
+    serializer_class = PropertyImageUploadSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, property_id):
+        prop = get_object_or_404(Property, id=property_id)
+
+        # 🔐 owner check
+        if prop.owner != request.user:
+            raise PermissionDenied("You can upload images only for your property")
+
+        images = request.FILES.getlist("images")
+
+        if not images:
+            return Response(
+                {"error": "No images provided"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        created = []
+        for img in images:
+            image_obj = PropertyImage.objects.create(
+                property=prop,
+                image=img
+            )
+            created.append({
+                "id": image_obj.id,
+                "image": image_obj.image.url,
+                "is_primary": image_obj.is_primary
+            })
+
+        return Response(
+            {
+                "message": f"{len(created)} images uploaded",
+                "images": created
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+
+

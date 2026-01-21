@@ -197,7 +197,19 @@ class PaymentTransaction(models.Model):
 
 
     def __str__(self):
-        return f"{self.user} - {self.amount} ({self.transaction_type}) - {self.user_committee.committee.name} ({self.status})"
+     committee_name = (
+        self.user_committee.committee.name
+        if self.user_committee and self.user_committee.committee
+        else "Wallet"
+    )
+
+     return (
+        f"{self.user.username} | "
+        f"{self.transaction_type} | "
+        f"₹{self.amount} | "
+        f"{committee_name} | "
+        f"{self.status}"
+    )
 
 
 

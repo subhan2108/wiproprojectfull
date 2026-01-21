@@ -14,6 +14,7 @@ from pathlib import Path
 import datetime
 import os
 from dotenv import load_dotenv
+import cloudinary
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,6 +48,9 @@ INSTALLED_APPS = [
     # Third-party apps
     'rest_framework',
     'rest_framework_simplejwt',
+
+    "cloudinary",
+    "cloudinary_storage",
    
     
     # Local apps (we'll create these)
@@ -66,10 +70,24 @@ INSTALLED_APPS = [
 
 
 
+import cloudinary
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME", "dufavtaxb"),
+    api_key=os.getenv("CLOUDINARY_API_KEY", "361416594317838"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET", "M696AyDVSp1j2GQGRc0WTmPI2NY"),
+    secure=True,
+)
+
+
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+MEDIA_URL = '/media/'
+
 
 # Media files configuration
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
+
 
 
 MIDDLEWARE = [

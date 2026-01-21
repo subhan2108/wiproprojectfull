@@ -1,0 +1,61 @@
+.mini-vertical-nav {
+  position: fixed;
+  left: 20px;
+  top: 120px;
+  background: #ffffff;
+  border-radius: 30px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  z-index: 100;
+}
+
+.nav-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  text-decoration: none;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.nav-icon i {
+  font-size: 20px;
+}
+
+.nav-icon:hover {
+  background: #ecfdf3;
+  color: #16a34a;
+}
+
+.nav-icon.active {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+/* 🔥 TOOLTIP */
+.nav-tooltip {
+  position: absolute;
+  left: 58px;
+  background: #111827;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-5px);
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.nav-icon:hover .nav-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}

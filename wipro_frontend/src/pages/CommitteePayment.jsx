@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/api";
 
 export default function PaymentPage() {
-  const { userCommitteeId, planId } = useParams();
+  const { userCommitteeId } = useParams();
   const navigate = useNavigate();
 
   const [paymentMethods, setPaymentMethods] = useState([]);

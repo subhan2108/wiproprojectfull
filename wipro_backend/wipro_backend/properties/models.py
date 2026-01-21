@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 import uuid
 import os
 import builtins
+from cloudinary.models import CloudinaryField
 
 
 def property_image_upload_path(instance, filename):
@@ -108,9 +109,13 @@ class Property(models.Model):
     
     @builtins.property
     def main_image(self):
-        """Return the first image of the property"""
-        first_image = self.images.first()
-        return first_image.image.url if first_image else None
+     primary = self.images.filter(is_primary=True).first()
+     if primary:
+        return primary.image
+     fallback = self.images.first()
+     return fallback.image if fallback else None
+
+
     
     @builtins.property
     def price_per_sqft(self):
@@ -119,7 +124,7 @@ class Property(models.Model):
 
 class PropertyImage(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to=property_image_upload_path)
+    image = CloudinaryField("image")
     caption = models.CharField(max_length=200, blank=True)
     is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -434,3 +439,51 @@ class GroupPaymentInvite(models.Model):
         ],
         default="pending"
     )
+
+
+
+
+import uuid
+from django.db import models
+from django.contrib.auth.models import User
+
+
+class PropertyRequest(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    PAYMENT_MODE = [
+        ("single", "Single Payment"),
+        ("group", "Group Payment"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="property_requests")
+    property = models.ForeignKey("Property", on_delete=models.CASCADE, related_name="purchase_requests")
+
+    full_name = models.CharField(max_length=120)
+    age = models.PositiveIntegerField()
+    occupation = models.CharField(max_length=120)
+
+    payment_mode = models.CharField(max_length=10, choices=PAYMENT_MODE)
+    group_size = models.PositiveIntegerField(null=True, blank=True)
+
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Property Request"
+        verbose_name_plural = "Property Requests"
+
+    def __str__(self):
+        return f"{self.full_name} → {self.property.title}"

@@ -243,13 +243,10 @@ const handleCommitteeDuePayNow = async (d) => {
     {/* 💰 INVEST */}
     <button
       onClick={() => {
-        if (!plans.length) {
-          alert("No payment plan available");
-          return;
-        }
+        
 
         // 👉 Use first plan as default invest plan
-        navigate(`/pay/${userCommitteeId}/${plans[0].id}`);
+        navigate(`/pay/${userCommitteeId}`);
       }}
       style={{
         padding: "10px 18px",
@@ -266,9 +263,7 @@ const handleCommitteeDuePayNow = async (d) => {
 
     {/* ⬇ WITHDRAW */}
     <button
-      onClick={() => {
-        alert("Withdraw flow coming next 🚀");
-      }}
+      onClick={() => navigate("/withdraw")}
       style={{
         padding: "10px 18px",
         background: "#2563eb",

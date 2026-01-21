@@ -45,11 +45,33 @@ path("plans/<uuid:plan_id>/invite-user/", SendGroupPaymentInviteView.as_view()),
     path('stats/', views.property_stats, name='property-stats'),
 
 
+
     path(
   "plans/<uuid:plan_id>/share-invite/",
   CreateShareInviteView.as_view()
 ),
 
+
+
+path(
+        "<uuid:property_id>/request/",
+        CreatePropertyRequestView.as_view(),
+        name="create-property-request"
+    ),
+    path(
+        "property-requests/my/",
+        MyPropertyRequestsView.as_view(),
+        name="my-property-requests"
+    ),
+
+
+
+
+    path(
+        "properties/<uuid:property_id>/images/upload/",
+        PropertyImageUploadView.as_view(),
+        name="property-image-upload"
+    ),
 
     
 

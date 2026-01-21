@@ -8,7 +8,14 @@ from .models import GroupPaymentInvite
 class PropertyImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyImage
-        fields = ['id', 'image', 'caption', 'is_primary', 'created_at']
+        fields = [
+            "id",
+            "image",
+            "caption",
+            "is_primary",
+            "created_at",
+        ]
+
 
 class PropertyOwnerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,29 +23,28 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'first_name', 'last_name', 'email']
 
 class PropertyListSerializer(serializers.ModelSerializer):
-    """Serializer for property list view (less detailed)"""
-    main_image = serializers.ReadOnlyField()
-    price_per_sqft = serializers.ReadOnlyField()
-    owner = PropertyOwnerSerializer(read_only=True)
-    is_favorited = serializers.SerializerMethodField()
-    
+    main_image = serializers.SerializerMethodField()
+
     class Meta:
         model = Property
         fields = [
-            'id', 'title', 'property_type', 'listing_type', 'status',
-            'location', 'city', 'price', 'rent_price', 'area_sqft',
-            'bedrooms', 'bathrooms', 'main_image', 'price_per_sqft',
-            'owner', 'is_featured', 'is_verified', 'views_count',
-            'created_at', 'is_favorited'
+            "id",
+            "title",
+            "price",
+            "city",
+            "location",
+            "bedrooms",
+            "bathrooms",
+            "status",          # ✅ ADD THIS
+            "area_sqft",
+            "property_type",
+            "is_verified",
+            "main_image",
         ]
-    
-    def get_is_favorited(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return PropertyFavorite.objects.filter(
-                property=obj, user=request.user
-            ).exists()
-        return False
+
+    def get_main_image(self, obj):
+        img = obj.main_image
+        return img.url if img else None
 
 class PropertyDetailSerializer(serializers.ModelSerializer):
     """Serializer for property detail view (complete data)"""
@@ -47,11 +53,14 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     price_per_sqft = serializers.ReadOnlyField()
     is_favorited = serializers.SerializerMethodField()
     inquiry_count = serializers.SerializerMethodField()
-    
+
+    # ✅ NEW FIELD
+    user_request_status = serializers.SerializerMethodField()
+
     class Meta:
         model = Property
-        fields = '__all__'
-    
+        fields = '__all__'  # this will auto-include user_request_status
+
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
@@ -59,9 +68,22 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
                 property=obj, user=request.user
             ).exists()
         return False
-    
+
     def get_inquiry_count(self, obj):
         return obj.inquiries.count()
+
+    # ✅ NEW METHOD
+    def get_user_request_status(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+
+        pr = PropertyRequest.objects.filter(
+            property=obj,
+            user=request.user
+        ).first()
+
+        return pr.status if pr else None
 
 class PropertyCreateUpdateSerializer(serializers.ModelSerializer):
     """Serializer for creating/updating properties"""
@@ -241,3 +263,61 @@ class GroupPaymentInviteSerializer(serializers.ModelSerializer):
             "created_at",
             "property",
         ]
+
+
+
+from rest_framework import serializers
+from .models import PropertyRequest
+
+# serializers.py
+from rest_framework import serializers
+from .models import PropertyRequest
+
+class PropertyRequestSerializer(serializers.ModelSerializer):
+    property_title = serializers.CharField(
+        source="property.title",
+        read_only=True
+    )
+
+    class Meta:
+        model = PropertyRequest
+        fields = [
+            "id",
+            "property",
+            "property_title",
+            "full_name",
+            "age",
+            "occupation",
+            "payment_mode",
+            "group_size",
+            "status",
+            "created_at",
+        ]
+        read_only_fields = [
+            "property",
+            "status",
+            "created_at",
+        ]
+
+    def validate(self, data):
+        if data["payment_mode"] == "group":
+            if not data.get("group_size") or data["group_size"] < 2:
+                raise serializers.ValidationError(
+                    "Group size must be at least 2"
+                )
+        else:
+            data["group_size"] = None
+        return data
+
+
+
+
+
+# serializers.py
+from rest_framework import serializers
+from .models import PropertyImage
+
+class PropertyImageUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PropertyImage
+        fields = ["id", "image", "is_primary"]

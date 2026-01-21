@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "../api/api";
 import PropertyCard from "../components/PropertyCard";
 import "../styles/property.css";
+import MiniVerticalNav from "../components/MiniVerticalNav";
 
 export default function Properties() {
   const [properties, setProperties] = useState([]);
@@ -24,36 +25,49 @@ export default function Properties() {
 
   return (
     <div className="properties-page">
-      {/* FULL WIDTH HEADER */}
+      {/* LEFT – MINI NAV */}
+  <div className="market-sidebar">
+  <MiniVerticalNav />
+</div>
       {/* MARKET HEADER */}
-<div className="market-header">
-  <div className="market-header-inner">
+<div className="market-layout">
 
-    {/* LEFT */}
-    <div className="market-title">
-      <h1>
-        Market <br /><span>Listings</span>
-      </h1>
-      <p>Discover exclusive verified properties.</p>
-    </div>
+  
 
-    {/* RIGHT */}
-    <div className="market-actions">
-      <div className="market-search">
-        <i className="bi bi-search"></i>
-        <input
-          type="text"
-          placeholder="Search city, area or project..."
-        />
+  {/* RIGHT – HEADER */}
+  <div className="market-main">
+
+    {/* MARKET HEADER */}
+    <div className="market-header">
+      <div className="market-header-inner">
+
+        <div className="market-title">
+          <h1>
+            Market <br /><span>Listings</span>
+          </h1>
+          <p>Discover exclusive verified properties.</p>
+        </div>
+
+        <div className="market-actions">
+          <div className="market-search">
+            <i className="bi bi-search"></i>
+            <input
+              type="text"
+              placeholder="Search city, area or project..."
+            />
+          </div>
+
+          <button className="market-filter">
+            All Types <i className="bi bi-chevron-down"></i>
+          </button>
+        </div>
+
       </div>
-
-      <button className="market-filter">
-        All Types <i className="bi bi-chevron-down"></i>
-      </button>
     </div>
 
   </div>
 </div>
+
 
 
       {/* PROPERTY GRID */}

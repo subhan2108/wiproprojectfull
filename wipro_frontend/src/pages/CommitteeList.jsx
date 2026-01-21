@@ -1,101 +1,153 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/api";
 import JoinCommitteeModal from "../components/JoinCommitteeModal";
-import '../styles/committee.css'
+import "../styles/committee.css";
 
 export default function CommitteeList() {
   const [committees, setCommittees] = useState([]);
+  const [joinedCommitteeMap, setJoinedCommitteeMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedCommittee, setSelectedCommittee] = useState(null);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    apiFetch("/committees/")
-      .then((data) => {
-        setCommittees(data);
+    Promise.all([
+      apiFetch("/committees/"),
+      apiFetch("/my-committees/"),
+    ])
+      .then(([committeesData, myCommitteesData]) => {
+        setCommittees(committeesData);
+
+        // map committee_id -> user_committee_id
+        const map = {};
+        myCommitteesData.committees.forEach((uc) => {
+          map[uc.committee_id] = uc.id;
+        });
+
+        setJoinedCommitteeMap(map);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
   if (loading) {
-    return <div style={{ padding: 20 }}>Loading committees...</div>;
+    return <div className="loading">Loading committees...</div>;
   }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Available Committees</h2>
+    <div className="committee-page">
+      <h2 className="page-title">Available Committees</h2>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "16px",
-        }}
-      >
-        {committees.map((c) => (
-          <div
-            key={c.id}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              padding: "16px",
-              background: "#fff",
-            }}
-          >
-            <h3>{c.name}</h3>
+      <div className="committee-grid">
+        {committees.map((c) => {
+          const slotsLeft = c.total_slots - c.filled_slots;
+          const progress = (c.filled_slots / c.total_slots) * 100;
 
-            {c.daily_amount && (
-              <p>
-                <b>Daily Investment:</b> ₹{c.daily_amount}
-              </p>
-            )}
+          const isJoined = Boolean(joinedCommitteeMap[c.id]);
+          const userCommitteeId = joinedCommitteeMap[c.id];
 
-            {c.monthly_amount && (
-              <p>
-                <b>Monthly Investment:</b> ₹{c.monthly_amount}
-              </p>
-            )}
+          return (
+            <div className="committee-card" key={c.id}>
+              
+              {/* 🔴 LAST SLOTS WARNING */}
+              {slotsLeft > 0 && slotsLeft <= 2 && (
+                <span className="slots-warning">
+                  Only {slotsLeft} slots left
+                </span>
+              )}
 
-            {c.yearly_amount && (
-              <p>
-                <b>Yearly Investment:</b> ₹{c.yearly_amount}
-              </p>
-            )}
+              {/* TITLE */}
+              <h3 className="committee-title">
+                <i className="bi bi-graph-up committee-icon"></i> {c.name}
+              </h3>
+              <p className="subtitle">High-yield investment committee</p>
 
-            <p>
-              <b>Duration:</b> {c.duration_months} months
-            </p>
-            <p>
-              <b>ROI:</b> {c.roi_percent}%
-            </p>
-            <p>
-              <b>Slots:</b> {c.filled_slots} / {c.total_slots}
-            </p>
+              {/* INVESTMENT ROW */}
+              <div className="investment-row">
+                {c.daily_amount && (
+                  <div>
+                    <span>Daily Investment</span>
+                    <strong>
+                      ₹{Number(c.daily_amount).toLocaleString("en-IN")}
+                    </strong>
+                  </div>
+                )}
+                {c.monthly_amount && (
+                  <div>
+                    <span>Monthly Investment</span>
+                    <strong>
+                      ₹{Number(c.monthly_amount).toLocaleString("en-IN")}
+                    </strong>
+                  </div>
+                )}
+              </div>
 
-            <button
-              disabled={c.slots_available <= 0}
-              onClick={() => setSelectedCommittee(c)}   // ✅ OPEN MODAL
-              style={{
-                marginTop: "10px",
-                padding: "10px",
-                width: "100%",
-                border: "none",
-                borderRadius: "6px",
-                background: c.slots_available > 0 ? "#16a34a" : "#999",
-                color: "#fff",
-                cursor: c.slots_available > 0 ? "pointer" : "not-allowed",
-              }}
-            >
-              {c.slots_available > 0 ? "Join Committee" : "Slots Full"}
-            </button>
-          </div>
-        ))}
+              {/* INFO ROW */}
+              <div className="info-row">
+                <div>
+                  <i className="bi bi-hourglass-split"></i>{" "}
+                  {c.duration_months} months
+                </div>
+                <div>
+                  <i className="bi bi-graph-up-arrow"></i>{" "}
+                  {c.roi_percent}% ROI
+                </div>
+                <div>
+                  <i className="bi bi-people"></i> {c.filled_slots}
+                </div>
+              </div>
+
+              {/* TOTAL RETURN */}
+              <div className="return-box">
+                <p>Total Return After {c.duration_months} Months</p>
+                <h4>
+                  ₹{Number(c.expected_total_return).toLocaleString("en-IN")}
+                </h4>
+              </div>
+
+              {/* SLOTS */}
+              <div className="slots">
+                <div className="slots-text">
+                  Slots Available
+                  <span>
+                    {c.filled_slots}/{c.total_slots}
+                  </span>
+                </div>
+
+                <div className="progress">
+                  <div
+                    className="progress-fill"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* ACTION BUTTON */}
+              <button
+                className="join-btn"
+                disabled={slotsLeft === 0 && !isJoined}
+                onClick={() => {
+                  if (isJoined) {
+                    navigate(`/my-committee/${userCommitteeId}`);
+                  } else {
+                    setSelectedCommittee(c);
+                  }
+                }}
+              >
+                {isJoined
+                  ? "View Details →"
+                  : slotsLeft === 0
+                  ? "Slots Full"
+                  : "Join Committee →"}
+              </button>
+            </div>
+          );
+        })}
       </div>
 
-      {/* ✅ JOIN COMMITTEE MODAL */}
+      {/* JOIN MODAL */}
       {selectedCommittee && (
         <JoinCommitteeModal
           committee={selectedCommittee}
