@@ -37,7 +37,7 @@ import MyLoans from "./pages/MyLoans";
 import LoanDetails from "./pages/LoanDetails";
 import CommitteeHistory from "./pages/CommitteeHistory";
 import CommitteePayment from "./pages/CommitteePayment";
-import Profile from "./components/Profile"
+import Profile from "./pages/Profile"
 import Wallet from "./pages/Wallet";
 import ProfileKYC from "./pages/ProfileKYC";
 import ReferralCard from "./pages/ReferralCard";

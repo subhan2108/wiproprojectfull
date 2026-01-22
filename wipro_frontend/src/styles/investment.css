@@ -445,6 +445,7 @@ height: 0pc;
   .investment-container {
     grid-template-columns: 1fr; /* 🔥 stack */
     gap: 50px;
+    display: grid;
   }
 }
 
@@ -460,6 +461,7 @@ height: 0pc;
     max-width: 100%;
     text-align: center;
     width: auto;
+    display: grid;
   }
 
   .investment-pill {
@@ -491,7 +493,7 @@ height: 0pc;
     display: grid;
   }
   .investment-card {
-    width: 17rem;
+    width: 20rem;
   }
 }
 
@@ -509,6 +511,17 @@ height: 0pc;
   .investment-section {
     display: grid;
     width: 0px;
+  }
+
+  .investment-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .investment-section {
+    background-color: transparent;
   }
 
 }

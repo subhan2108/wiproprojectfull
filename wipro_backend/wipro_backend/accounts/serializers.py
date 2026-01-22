@@ -77,3 +77,62 @@ class UserVerificationSerializer(serializers.ModelSerializer):
         model = UserVerification
         fields = "__all__"
         read_only_fields = ["user", "status", "created_at", "updated_at"]
+
+
+
+
+
+
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from .models import UserProfile, UserVerification
+
+class ProfileSerializer(serializers.ModelSerializer):
+    profile_pic = serializers.ImageField(required=False)
+    email = serializers.EmailField(source="user.email", read_only=True)
+    first_name = serializers.CharField(source="user.first_name")
+    last_name = serializers.CharField(source="user.last_name")
+    date_joined = serializers.DateTimeField(source="user.date_joined", read_only=True)
+
+    # 🔗 KYC FIELDS
+    kyc_status = serializers.SerializerMethodField()
+    phone_number = serializers.SerializerMethodField()
+    account_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        fields = (
+            "profile_pic",
+            "location",
+            "email",
+            "first_name",
+            "last_name",
+            "date_joined",
+            "kyc_status",
+            "phone_number",
+            "account_id",
+        )
+
+    def get_kyc_status(self, obj):
+        if hasattr(obj.user, "verification"):
+            return obj.user.verification.status
+        return "not_submitted"
+
+    def get_phone_number(self, obj):
+        if hasattr(obj.user, "verification"):
+            return obj.user.verification.phone_number
+        return None
+
+    def get_account_id(self, obj):
+        if hasattr(obj.user, "verification"):
+            return f"KYC-{obj.user.verification.id}"
+        return None
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user", {})
+
+        for attr, value in user_data.items():
+            setattr(instance.user, attr, value)
+        instance.user.save()
+
+        return super().update(instance, validated_data)

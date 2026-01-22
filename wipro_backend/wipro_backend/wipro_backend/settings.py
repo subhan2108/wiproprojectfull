@@ -54,7 +54,7 @@ INSTALLED_APPS = [
    
     
     # Local apps (we'll create these)
-    'accounts',
+    'accounts.apps.AccountsConfig',
     'django_filters',  # Add this
     'properties',  # Add this
     'wallet',

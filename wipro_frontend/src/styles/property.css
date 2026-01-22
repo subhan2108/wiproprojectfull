@@ -572,3 +572,40 @@
 .property-btn:hover {
   background: #008f5b;
 }
+
+
+
+
+@media (max-width: 750px) {
+  .market-header-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+  }
+}
+
+
+@media (max-width: 480px) {
+  .market-header-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .market-search {
+    display: contents;
+  }
+}
+
+@media (max-width: 350px) {
+  .market-header-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+  }
+
+
+  .market-search {
+    display: contents;
+  }
+}

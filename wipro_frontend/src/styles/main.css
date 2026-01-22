@@ -1901,3 +1901,24 @@ button {
     height: 180px;
   }
 }
+
+
+@media (max-width: 480px) {
+  .floating-stat.left {
+    display: none;
+  }
+
+  .floating-security.right{
+    display: none;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero {
+    min-height: 35rem;
+  }
+
+  
+}

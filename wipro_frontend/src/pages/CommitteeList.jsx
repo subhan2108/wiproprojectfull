@@ -154,6 +154,8 @@ export default function CommitteeList() {
           onClose={() => setSelectedCommittee(null)}
         />
       )}
+
+      
     </div>
   );
 }

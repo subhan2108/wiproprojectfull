@@ -214,3 +214,24 @@ def referral_leaderboard(request):
     ]
 
     return Response(data)
+
+
+
+
+
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import UserProfile
+from .serializers import ProfileSerializer
+
+class ProfileView(RetrieveUpdateAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_object(self):
+        profile, created = UserProfile.objects.get_or_create(
+            user=self.request.user
+        )
+        return profile
