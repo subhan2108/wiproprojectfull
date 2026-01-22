@@ -570,3 +570,131 @@ class MyWalletView(APIView):
             "status": wallet.status,
             "updated_at": wallet.updated_at.strftime("%Y-%m-%d %H:%M"),
         })
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from decimal import Decimal
+from django.utils import timezone
+
+from .models import PaymentTransaction, PaymentMethod, Wallet
+from committees.models import UserCommittee
+
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from decimal import Decimal
+from django.db.models import Sum
+from django.utils import timezone
+
+from wallet.models import Wallet, PaymentTransaction, PaymentMethod
+from committees.models import UserCommittee
+
+
+def get_available_balance(wallet):
+    """
+    Calculates REAL available balance from approved transactions
+    """
+    credited = PaymentTransaction.objects.filter(
+        wallet=wallet,
+        status="approved",
+        wallet_effect="credit"
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
+
+    debited = PaymentTransaction.objects.filter(
+        wallet=wallet,
+        status="approved",
+        wallet_effect="debit"
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
+
+    return credited - debited + wallet.bonus_balance
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def withdraw_request(request):
+    user = request.user
+
+    # ---------------------------
+    # 🔹 INPUT VALIDATION
+    # ---------------------------
+    try:
+        amount = Decimal(request.data.get("amount"))
+    except:
+        return Response({"error": "Invalid amount"}, status=400)
+
+    if amount <= 0:
+        return Response({"error": "Amount must be greater than zero"}, status=400)
+
+    method_id = request.data.get("payment_method_id")
+    withdrawal_details = request.data.get("withdrawal_details", "")
+    user_committee_id = request.data.get("user_committee_id")
+
+    # ---------------------------
+    # 🔹 WALLET CHECK
+    # ---------------------------
+    try:
+        wallet = Wallet.objects.get(user=user)
+    except Wallet.DoesNotExist:
+        return Response({"error": "Wallet not found"}, status=404)
+
+    available_balance = get_available_balance(wallet)
+
+    if available_balance < amount:
+        return Response(
+            {
+                "error": "Insufficient balance",
+                "available_balance": float(available_balance),
+            },
+            status=400,
+        )
+
+    # ---------------------------
+    # 🔹 PAYMENT METHOD CHECK
+    # ---------------------------
+    try:
+        payment_method = PaymentMethod.objects.get(
+            id=method_id,
+            is_active=True,
+            for_withdrawal=True
+        )
+    except PaymentMethod.DoesNotExist:
+        return Response({"error": "Invalid payment method"}, status=400)
+
+    # ---------------------------
+    # 🔹 OPTIONAL COMMITTEE
+    # ---------------------------
+    user_committee = None
+    if user_committee_id:
+        try:
+            user_committee = UserCommittee.objects.get(
+                id=user_committee_id,
+                user=user
+            )
+        except UserCommittee.DoesNotExist:
+            return Response({"error": "Invalid committee"}, status=400)
+
+    # ---------------------------
+    # 🔹 CREATE WITHDRAWAL REQUEST
+    # ---------------------------
+    PaymentTransaction.objects.create(
+        user=user,
+        user_committee=user_committee,
+        transaction_type="withdrawal",
+        amount=amount,
+        payment_method=payment_method,
+        withdrawal_details=withdrawal_details,
+        wallet=wallet,
+        wallet_effect="debit",
+        status="pending",
+        created_at=timezone.now(),
+    )
+
+    return Response(
+        {
+            "success": True,
+            "message": "Withdrawal request submitted. Awaiting admin approval.",
+            "amount": float(amount),
+        },
+        status=201,
+    )

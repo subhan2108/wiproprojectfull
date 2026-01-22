@@ -26,7 +26,7 @@ path("plans/<uuid:plan_id>/invite-user/", SendGroupPaymentInviteView.as_view()),
 
 
 
-    path('<uuid:pk>/', views.PropertyDetailView.as_view(), name='property-detail'),
+    
     path('my-properties/', views.MyPropertiesView.as_view(), name='my-properties'),
     
     # Property Images
@@ -73,6 +73,20 @@ path(
         name="property-image-upload"
     ),
 
+
+path(
+    "property-images/<int:pk>/",
+    PropertyImageDeleteView.as_view(),
+    name="property-image-delete"
+),
+
+
+path(
+    "<uuid:property_id>/images/",
+    PropertyImageUploadView.as_view(),
+    name="property-image-upload"
+),
+
     
 
     # Interest + owner respond
@@ -105,6 +119,17 @@ path(
     MyGroupPaymentInvitesView.as_view(),
     name="group-invites"
 ),
+
+
+# 🔥 DELETE PROPERTY
+path(
+    "<uuid:property_id>/delete/",
+    DeletePropertyView.as_view(),
+    name="delete-property"
+),
+
+
+path('<uuid:pk>/', views.PropertyDetailView.as_view(), name='property-detail'),
 
 
 

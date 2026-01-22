@@ -263,7 +263,7 @@ const handleCommitteeDuePayNow = async (d) => {
 
     {/* ⬇ WITHDRAW */}
     <button
-      onClick={() => navigate("/withdraw")}
+      onClick={() => navigate(`/committee/${userCommitteeId}/withdraw`)}
       style={{
         padding: "10px 18px",
         background: "#2563eb",
@@ -274,7 +274,7 @@ const handleCommitteeDuePayNow = async (d) => {
         fontWeight: 600,
       }}
     >
-      ⬇ Withdraw
+       Withdraw
     </button>
   </div>
 </div>

@@ -46,6 +46,8 @@ import MyPropertiesPage from "./pages/MyPropertiesPage";
 import EditPropertyPage from "./pages/EditPropertyPage";
 import PropertyRequestForm from "./pages/PropertyRequestForm";
 import MyPropertyRequests from "./pages/MyPropertyRequests";
+import CommitteeWithdraw from "./pages/CommitteeWithdraw";
+
 
 
 
@@ -126,6 +128,16 @@ export const router = createBrowserRouter([
     element: (
       <Protected>
         <MyPropertyRequests/>
+      </Protected>
+    ),
+  },
+
+
+ {
+    path: "/committee/:userCommitteeId/withdraw",
+    element: (
+      <Protected>
+        <CommitteeWithdraw/>
       </Protected>
     ),
   },

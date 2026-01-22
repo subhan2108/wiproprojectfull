@@ -15,10 +15,15 @@ export default function MyPropertiesPage() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this property?")) return;
-    await apiFetch(`/properties/${id}/`, { method: "DELETE" });
-    setProperties((prev) => prev.filter((p) => p.id !== id));
-  };
+  if (!window.confirm("Delete this property?")) return;
+
+  await apiFetch(`/properties/${id}/delete/`, {
+    method: "DELETE",
+  });
+
+  setProperties((prev) => prev.filter((p) => p.id !== id));
+};
+
 
   return (
     <div className="my-properties-page">

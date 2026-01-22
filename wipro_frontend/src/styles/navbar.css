@@ -2,11 +2,24 @@
 .navbar-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 16px;
+  margin-top: 10px;
   z-index: 1000;
-      margin-left: 3rem;
-    margin-right: 3rem;
+
+    background-color: transparent;
 }
+
+
+.navbar-wrapper {
+  position: sticky;       /* 🔥 makes it sticky */
+  top: 10px;              /* spacing from top */
+  z-index: 1000;
+
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  background-color: transparent;
+}
+
 
 /* PILL CONTAINER */
 .navbar-pill {
@@ -64,7 +77,65 @@
     font-weight: 700;
     color: #111827;
     padding: 6px 0;
+    position: relative;     /* 🔥 required for underline */
+
+transition: color 0.25s ease; /* 🔥 text color animation */
 }
+
+
+
+.navbar-links a.active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+
+  width: 60%;
+  height: 2px;
+
+  background: #22c55e;
+  border-radius: 999px;
+
+  transform: translateX(-50%);
+}
+
+
+.navbar-links a:hover::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+
+  width: 60%;
+  height: 2px;
+
+  background: #22c55e;
+  border-radius: 999px;
+
+  transform: translateX(-50%);
+  opacity: 0.4;
+  transform: scaleX(0);                 /* 🔥 hidden */
+  transform-origin: left;               /* 🔥 left → right */
+  transition: transform 0.3s ease;      /* 🔥 smooth motion */
+}
+
+.navbar-links a:hover {
+  color: #22c55e;   /* 🔥 text turns green */
+}
+
+.navbar-links a:hover::after {
+  transform: scaleX(1);  /* 🔥 underline grows left → right */
+}
+
+
+.navbar-links a.active {
+  color: #22c55e;   /* 🔥 active text stays green */
+}
+
+.navbar-links a.active::after {
+  transform: scaleX(1);  /* 🔥 underline stays visible */
+}
+
 
 
 .navbar-links a.active {
@@ -80,8 +151,8 @@
 }
 
 .user-avatar {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   background: #22c55e;
   color: white;
   border-radius: 50%;
@@ -90,4 +161,160 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: sans-serif;
+}
+
+
+.navbar-links a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+
+  width: 18px;          /* 🔥 shorter line */
+  height: 2px;
+
+  background: #22c55e;
+  border-radius: 999px;
+
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+
+.navbar-links a:hover {
+  color: #22c55e;
+}
+
+.navbar-links a:hover::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+
+.navbar-links a.active {
+  color: #22c55e;
+}
+
+.navbar-links a.active::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+
+/* VISIBILITY HELPERS */
+.desktop-only {
+  display: flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
+/* HAMBURGER */
+.hamburger {
+  width: 36px;
+  height: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+
+
+}
+
+.hamburger span {
+  height: 3px;
+  width: 100%;
+  background: #111827;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+/* HAMBURGER ANIMATION */
+.hamburger.open span:nth-child(1) {
+  transform: translateY(10px) rotate(45deg);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: translateY(-10px) rotate(-45deg);
+}
+
+/* MOBILE MENU */
+.mobile-menu {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  width: calc(100% - 32px);
+  max-width: 420px;
+
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 20px 0;
+
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.12);
+
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s ease;
+  z-index: 999;
+}
+
+.mobile-menu.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.mobile-menu a {
+  display: block;
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  text-decoration: none;
+}
+
+.mobile-menu a.active {
+  color: #22c55e;
+}
+
+/* RESPONSIVE BREAKPOINT */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+
+  }
+
+  .hamburger{
+    display: none;
+  }
+
+  .mobile-only {
+    display: flex;
+  }
+
+  .hamburger {
+    display: flex; /* 🔥 only show on mobile */
+  }
+}
+
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+@media (max-width: 768px) {
+  .navbar-links {
+    display: none; /* 🔥 removes center gap */
+  }
 }

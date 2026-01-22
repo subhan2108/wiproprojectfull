@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import MyWalletView, MyWalletTransactionsView, AdminWalletAdjustView
 from .views import *
+from . import views
 urlpatterns = [
     path("me/", MyWalletView.as_view()),
     path("transactions/", MyWalletTransactionsView.as_view()),
@@ -21,6 +22,10 @@ urlpatterns = [
 path("payments/<uuid:pk>/", payment_detail),
 path("wallet-payments/", wallet_payment_transactions),
 
-
+path(
+        "withdraw-request/",
+        views.withdraw_request,
+        name="withdraw-request"
+    ),
 
 ]

@@ -159,6 +159,12 @@ class PaymentTransaction(models.Model):
         help_text="Set by admin on approval"
     )
 
+    withdrawal_details = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Bank / UPI / USDT details for withdrawal"
+    )
+
     reference_id = models.CharField(
         max_length=100,
         blank=True,
@@ -211,6 +217,27 @@ class PaymentTransaction(models.Model):
         f"{self.status}"
     )
 
+
+class WithdrawalRequest(PaymentTransaction):
+    class Meta:
+        proxy = True
+        verbose_name = "Withdrawal Request"
+        verbose_name_plural = "Withdrawal Requests"
+
+    def __str__(self):
+        committee_name = (
+            self.user_committee.committee.name
+            if self.user_committee and self.user_committee.committee
+            else "Wallet"
+        )
+
+        return (
+            f"{self.user.username} | "
+            f"Withdrawal | "
+            f"₹{self.amount} | "
+            f"{committee_name} | "
+            f"{self.status}"
+        )
 
 
 

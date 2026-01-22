@@ -1,6 +1,9 @@
 import "../styles/main.css";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { container, item } from "../api/animations"
+import InvestmentCalculator from "../components/InvestmentCalculator";
 
 function Stat({ value, suffix = "", label, duration = 5000 }) {
   const [count, setCount] = useState(0);
@@ -34,95 +37,193 @@ function Stat({ value, suffix = "", label, duration = 5000 }) {
   );
 }
 
+
+/* Smooth infinite motion config */
+const smoothFloat = {
+  animate: {
+    y: [0, -12, 0],
+  },
+  transition: {
+    duration: 3,
+    ease: "easeInOut",
+    repeat: Infinity,
+  },
+};
+
+const smoothFloatSlow = {
+  animate: {
+    y: [0, 10, 0],
+  },
+  transition: {
+    duration: 3,
+    ease: "easeInOut",
+    repeat: Infinity,
+  },
+};
+
+
+
+const Servicecontainer = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.25,
+      delayChildren: 0.15,
+    },
+  },
+};
+
+
+const fadeUp = {
+  hidden: {
+    opacity: 0,
+    y: 40,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: "easeOut",
+    },
+  },
+};
+
 export default function Home() {
   return (
     <div className="home-page">
       {/* HERO SECTION */}
-<section className="hero">
-  <div className="hero-content">
+ <section className="hero">
 
-    <span className="hero-pill">
-      Trusted by 10,000+ Investors
-    </span>
+       {/* LEFT BOX – +24.8% */}
+      <motion.div
+        className="floating-stat left"
+        {...smoothFloat}
+      >
+        <div className="stat-value">+24.8%</div>
+        <div className="stat-label">QUARTERLY GROWTH</div>
+      </motion.div>
 
-    <h1 className="hero-title">
-      Buy, Sell & Invest Smarter <br />
-      with <span>WIPO Group</span>
-    </h1>
+      {/* RIGHT BOX – SECURITY */}
+      <motion.div
+        className="floating-security right"
+        {...smoothFloatSlow}
+      >
+        <i className="bi bi-shield-check"></i>
+        <span>Bank-Grade Security</span>
+      </motion.div>
 
-    <p className="hero-subtitle">
-      Your trusted partner in real estate and investment.
-      Secure, transparent, and profitable opportunities await.
-    </p>
+      {/* MAIN CONTENT */}
+      <motion.div
+        className="hero-content"
+        variants={container}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.span className="hero-pill" variants={item}>
+          <i className="bi bi-people-fill"></i> 10K+ Active Investors
+        </motion.span>
 
-    <div className="hero-actions">
-      <Link to="/" className="hero-btn primary">
-        <i className="bi bi-building btn-icon"></i> Buy Property
-      </Link>
+        <motion.h1 className="hero-title" variants={item}>
+          Invest Smarter. <br />
+          <span>Own WIPO Group.</span>
+        </motion.h1>
 
-      <Link to="/committees"className="hero-btn secondary">
-        <i className="bi bi-graph-up-arrow btn-icon"></i> Join Committee
-      </Link>
-    </div>
+        <motion.p className="hero-subtitle" variants={item}>
+          Modern real estate investment for everyone. <br />
+          Secure your future with blockchain-backed assets.
+        </motion.p>
 
-  </div>
-</section>
+        <motion.div className="hero-actions" variants={item}>
+          <a className="hero-btn primary">Buy Property</a>
+          <a className="hero-btn secondary">Join Committee</a>
+        </motion.div>
+      </motion.div>
+
+    </section>
 
 
       {/* FEATURES */}
       <section className="services-section">
-  <div className="services-container">
 
-    <h2 className="services-title">Our Services</h2>
-    <p className="services-subtitle">
-      Comprehensive solutions for all your property and investment needs
-    </p>
+      {/* HEADER */}
+      <motion.div
+        className="services-header"
+        variants={container}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: false, amount: 0.3 }}
+      >
+        <motion.span className="services-pill" variants={fadeUp}>
+          WIPO PREMIUM SERVICES
+        </motion.span>
 
-    <div className="services-grid">
+        <motion.h2 className="services-title" variants={fadeUp}>
+          Experience the <br />
+          <span>Future of Wealth</span>
+        </motion.h2>
+      </motion.div>
 
-      <div className="service-card">
-        <div className="service-icon">
-          <i className="bi bi-house"></i>
-        </div>
-        <h3>Property Buy</h3>
-        <p>
-          Browse and purchase verified properties with complete transparency
-        </p>
-      </div>
+      {/* CARDS */}
+      <motion.div
+        className="services-grid"
+        variants={Servicecontainer}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: false, amount: 0.2 }}
+      >
+        <motion.div className="service-card" variants={fadeUp}>
+          <div className="service-icon">
+            <i className="bi bi-house"></i>
+          </div>
+          <h3>Property Buy</h3>
+          <p>
+            Verified listings with secure smart-contract processing.
+          </p>
+          <span className="service-tag">WIPO ECOSYSTEM</span>
 
-      <div className="service-card">
-        <div className="service-icon">
-          <i className="bi bi-buildings"></i>
-        </div>
-        <h3>Property Sell</h3>
-        <p>
-          List your property and reach thousands of potential buyers
-        </p>
-      </div>
+        </motion.div>
 
-      <div className="service-card">
-        <div className="service-icon">
-          <i className="bi bi-graph-up-arrow"></i>
-        </div>
-        <h3>Committee Investment</h3>
-        <p>
-          Join investment committees with guaranteed returns
-        </p>
-      </div>
+        <motion.div className="service-card" variants={fadeUp}>
+          <div className="service-icon">
+            <i className="bi bi-building"></i>
+          </div>
+          <h3>Property Sell</h3>
+          <p>
+            Reach global buyers with our high-speed marketing engine.
+          </p>
+          <span className="service-tag">WIPO ECOSYSTEM</span>
 
-      <div className="service-card">
-        <div className="service-icon">
-          <i className="bi bi-currency-dollar"></i>
-        </div>
-        <h3>Loan Assistance</h3>
-        <p>
-          Get loans based on your committee investments
-        </p>
-      </div>
+        </motion.div>
 
-    </div>
-  </div>
-</section>
+        <motion.div className="service-card" variants={fadeUp}>
+          <div className="service-icon">
+            <i className="bi bi-person"></i>
+          </div>
+          <h3>Committees</h3>
+          <p>
+            Guaranteed high-yield investment groups for community growth.
+          </p>
+          <span className="service-tag">WIPO ECOSYSTEM</span>
+
+        </motion.div>
+
+        <motion.div className="service-card" variants={fadeUp}>
+          <div className="service-icon">
+            <i className="bi bi-currency-dollar"></i>
+          </div>
+          <h3>Loans</h3>
+          <p>
+            Leverage your assets for instant, low-interest liquidity.
+          </p>
+          <span className="service-tag">WIPO ECOSYSTEM</span>
+
+        </motion.div>
+      </motion.div>
+
+    </section>
+
+    <InvestmentCalculator />
 
 
 <section className="how-it-works">
@@ -223,27 +324,40 @@ export default function Home() {
 
 
       {/* CTA */}
-      <section className="cta-section">
-  <div className="cta-box">
-    <h2>Ready to Start Your Investment Journey?</h2>
+     {/* FINAL CTA */}
+<section className="final-cta-section">
+  <div className="final-cta-box">
 
-    <p>
-      Join thousands of successful investors who trust WIPO Group for their
-      property and investment needs
+    {/* pill */}
+    <span className="final-cta-pill">SECURE ECOSYSTEM</span>
+
+    {/* heading */}
+    <h2 className="final-cta-title">
+      Ready to Start Your <br />
+      <span>Investment Journey?</span>
+    </h2>
+
+    {/* subtitle */}
+    <p className="final-cta-subtitle">
+      Join thousands of successful investors who trust <strong>WIPO GROUP</strong>{" "}
+      for their property and investment needs.
     </p>
 
-    <div className="cta-actions">
-      <a href="/signup" className="cta-btn primary">
-        Create Free Account
-        <i className="bi bi-arrow-right"></i>
+    {/* actions */}
+    <div className="final-cta-actions">
+      <a href="/signup" className="final-cta-btn primary">
+        Create Free Account <i className="bi bi-arrow-right"></i>
       </a>
 
-      <a href="/contact" className="cta-btn secondary">
+      <a href="/contact" className="final-cta-btn secondary">
         Contact Us
       </a>
     </div>
+
   </div>
 </section>
+
+
 
 
     </div>

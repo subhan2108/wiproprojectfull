@@ -29,6 +29,7 @@ export default function Properties() {
   <div className="market-sidebar">
   <MiniVerticalNav />
 </div>
+
       {/* MARKET HEADER */}
 <div className="market-layout">
 

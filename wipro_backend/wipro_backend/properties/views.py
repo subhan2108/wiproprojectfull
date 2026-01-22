@@ -1394,3 +1394,59 @@ class PropertyImageUploadView(generics.CreateAPIView):
 
 
 
+class PropertyImageDeleteView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = PropertyImage.objects.all()
+
+    def perform_destroy(self, instance):
+        if instance.property.owner != self.request.user:
+            raise PermissionDenied("Only owner can delete images")
+        instance.delete()
+
+
+
+
+
+
+
+
+
+
+# 🔥 SAFE PROPERTY DELETE API (FINAL OVERRIDE)
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import PermissionDenied
+from django.db import transaction as db_tx
+
+class DeletePropertyView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @db_tx.atomic
+    def delete(self, request, property_id):
+        prop = get_object_or_404(Property, id=property_id)
+
+        # 🔐 Owner check
+        if prop.owner != request.user:
+            raise PermissionDenied("You can delete only your own property")
+
+        # ❌ Block delete if already sold
+        if prop.status == "sold":
+            return Response(
+                {"error": "Sold property cannot be deleted"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        title = prop.title
+        prop.delete()  # CASCADE deletes everything linked
+
+        return Response(
+    {
+        "message": "Property deleted successfully",
+        "property_title": title
+    },
+    status=status.HTTP_200_OK
+)
+
