@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "../api/api";
 import "../styles/referral.css";
 
+import { useCurrency } from "../context/CurrencyContext";
+import { formatPrice } from "../utils/currency";
+
 export default function ReferralCard() {
+  const { currency } = useCurrency();
+
   const [referralLink, setReferralLink] = useState("");
   const [period, setPeriod] = useState("weekly");
   const [data, setData] = useState([]);
@@ -32,18 +37,17 @@ export default function ReferralCard() {
     });
   }, []);
 
-   /* 🔹 COPY WITH ANIMATION */
+  /* 🔹 COPY WITH ANIMATION */
   const copyLink = () => {
     navigator.clipboard.writeText(referralLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  /* 🔹 NATIVE SHARE */
+  /* 🔹 SHARE */
   const shareNow = async () => {
     const text = `Join WIPO & earn rewards! 🚀\n\n${referralLink}`;
 
-    // Mobile / supported browsers
     if (navigator.share) {
       await navigator.share({
         title: "WIPO Refer & Earn",
@@ -53,12 +57,8 @@ export default function ReferralCard() {
       return;
     }
 
-    // Fallback (desktop)
     const encoded = encodeURIComponent(text);
-    window.open(
-      `https://wa.me/?text=${encoded}`,
-      "_blank"
-    );
+    window.open(`https://wa.me/?text=${encoded}`, "_blank");
   };
 
   return (
@@ -67,66 +67,65 @@ export default function ReferralCard() {
       <div className="refer-header">
         <span className="partner-badge">🚀 WIPO PARTNER PROGRAM</span>
         <h1>Refer & Earn</h1>
-        <p>
-          Invite friends to WIPO and grow your wealth together with rewards.
-        </p>
+        <p>Invite friends to WIPO and grow your wealth together with rewards.</p>
       </div>
 
       {/* MAIN GRID */}
       <div className="refer-grid">
         {/* LEFT CARD */}
-       <div className="refer-card primary">
-      <div className="refer-card-header">
-        <div className="icon-box">
-          <i className="bi bi-people"></i>
+        <div className="refer-card primary">
+          <div className="refer-card-header">
+            <div className="icon-box">
+              <i className="bi bi-people"></i>
+            </div>
+            <div className="refer-title">
+              <h3>Your Referral Code</h3>
+              <span>Share and start earning rewards</span>
+            </div>
+          </div>
+
+          <div className="refer-input-row">
+            <input value={referralLink} readOnly />
+            <button
+              onClick={copyLink}
+              className={`copy-btn ${copied ? "copied" : ""}`}
+            >
+              {copied ? "✓" : <i className="bi bi-clipboard"></i>}
+            </button>
+          </div>
+
+          <button className="share-btn" onClick={shareNow}>
+            <i className="bi bi-share"></i> Share Now
+          </button>
+
+          <div className="share-options">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(referralLink)}`}
+              target="_blank"
+            >
+              <i className="bi bi-whatsapp"></i>
+            </a>
+
+            <a
+              href={`https://t.me/share/url?url=${encodeURIComponent(
+                referralLink
+              )}`}
+              target="_blank"
+            >
+              <i className="bi bi-telegram"></i>
+            </a>
+
+            <a
+              href={`mailto:?subject=WIPO Refer & Earn&body=${encodeURIComponent(
+                referralLink
+              )}`}
+            >
+              <i className="bi bi-envelope"></i>
+            </a>
+          </div>
         </div>
-        <div className="refer-title">
-          <h3>Your Referral Code</h3>
-          <span>Share and start earning rewards</span>
-        </div>
-      </div>
 
-      {/* INPUT + COPY */}
-      <div className="refer-input-row">
-        <input value={referralLink} readOnly />
-
-        <button onClick={copyLink} className={`copy-btn ${copied ? "copied" : ""}`}>
-          {copied ? "✓" : <i className="bi bi-clipboard"></i>}
-        </button>
-      </div>
-
-      {/* SHARE BUTTON */}
-      <button className="share-btn" onClick={shareNow}>
-        <i className="bi bi-share"></i>
-        Share Now
-      </button>
-
-      {/* EXTRA SHARE OPTIONS */}
-      <div className="share-options">
-        <a
-          href={`https://wa.me/?text=${encodeURIComponent(referralLink)}`}
-          target="_blank"
-        >
-          <i className="bi bi-whatsapp"></i>
-        </a>
-
-        <a
-          href={`https://t.me/share/url?url=${encodeURIComponent(referralLink)}`}
-          target="_blank"
-        >
-          <i className="bi bi-telegram"></i>
-        </a>
-
-        <a
-          href={`mailto:?subject=WIPO Refer & Earn&body=${encodeURIComponent(referralLink)}`}
-        >
-          <i className="bi bi-envelope"></i>
-        </a>
-      </div>
-    </div>
-
-
-        {/* RIGHT CARD */}
+        {/* RIGHT CARD – REWARDS */}
         <div className="refer-card reward">
           <div className="refer-card-header">
             <div className="icon-box gold">
@@ -137,64 +136,61 @@ export default function ReferralCard() {
 
           <div className="reward-item">
             <span>Weekly Top</span>
-            <strong>₹5,000</strong>
+            <strong>{formatPrice(5000, currency)}</strong>
           </div>
 
           <div className="reward-item">
             <span>Monthly Top</span>
-            <strong>₹50,000</strong>
+            <strong>{formatPrice(50000, currency)}</strong>
           </div>
 
           <div className="reward-item">
             <span>Yearly Top</span>
-            <strong>₹10,00,000</strong>
+            <strong>{formatPrice(1000000, currency)}</strong>
           </div>
         </div>
       </div>
 
+      {/* LEADERBOARD */}
       <div className="leaderboard-card">
-      <h2>🏆 Leaderboard</h2>
-      <p className="sub">Top performers competing for prizes</p>
+        <h2>🏆 Leaderboard</h2>
+        <p className="sub">Top performers competing for prizes</p>
 
-      {/* Tabs */}
-      <div className="leaderboard-tabs">
-        {["weekly", "monthly", "yearly"].map((p) => (
-          <button
-            key={p}
-            className={period === p ? "active" : ""}
-            onClick={() => setPeriod(p)}
-          >
-            {p.charAt(0).toUpperCase() + p.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      {/* List */}
-      {loading ? (
-        <div className="loading">Loading...</div>
-      ) : (
-        <div className="leaderboard-list">
-          {data.map((item) => (
-           <div className="leaderboard-row">
-  <div className={`rank rank-${item.rank}`}>{item.rank}</div>
-
-  <div className="leaderboard-user">
-    <div className="username">{item.name}</div>
-    <div className="referrals">{item.referrals} referrals</div>
-  </div>
-
-  <div className="leaderboard-amount">₹{item.amount}</div>
-</div>
-
-
-
-
-
-
+        <div className="leaderboard-tabs">
+          {["weekly", "monthly", "yearly"].map((p) => (
+            <button
+              key={p}
+              className={period === p ? "active" : ""}
+              onClick={() => setPeriod(p)}
+            >
+              {p.charAt(0).toUpperCase() + p.slice(1)}
+            </button>
           ))}
         </div>
-      )}
-    </div>
+
+        {loading ? (
+          <div className="loading">Loading...</div>
+        ) : (
+          <div className="leaderboard-list">
+            {data.map((item) => (
+              <div className="leaderboard-row" key={item.rank}>
+                <div className={`rank rank-${item.rank}`}>{item.rank}</div>
+
+                <div className="leaderboard-user">
+                  <div className="username">{item.name}</div>
+                  <div className="referrals">
+                    {item.referrals} referrals
+                  </div>
+                </div>
+
+                <div className="leaderboard-amount">
+                  {formatPrice(item.amount, currency)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

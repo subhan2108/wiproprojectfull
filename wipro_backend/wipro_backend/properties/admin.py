@@ -320,3 +320,54 @@ class PropertyRequestAdmin(admin.ModelAdmin):
     property_owner.short_description = "Owner"
     property_owner_display.short_description = "Property Owner"
     group_size_display.short_description = "Group Size"
+
+
+
+
+from django.contrib import admin
+from .models import PropertyListingRequest
+
+
+@admin.register(PropertyListingRequest)
+class PropertyListingRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        "property",
+        "user",
+        "status",
+        "is_paid",
+        "listing_fee",
+        "created_at",
+    )
+
+    list_filter = ("status", "is_paid", "created_at")
+    search_fields = (
+        "property__title",
+        "user__username",
+        "user__email",
+    )
+
+    readonly_fields = (
+        "user",
+        "property",
+        "listing_fee",
+        "created_at",
+        "approved_at",
+    )
+
+    actions = ["approve_listing", "reject_listing"]
+
+    def approve_listing(self, request, queryset):
+        for req in queryset:
+            if req.is_paid:
+                req.status = "approved"
+                req.property.is_verified = True  # 🔥 SHOW IN MAIN LISTING
+                req.property.save(update_fields=["is_verified"])
+
+                req.save(update_fields=["status"])
+        self.message_user(request, "Selected properties approved.")
+
+    approve_listing.short_description = "Approve selected listings"
+
+    def reject_listing(self, request, queryset):
+        queryset.update(status="rejected")
+        self.message_user(request, "Selected listings rejected.")

@@ -3,38 +3,18 @@ import { apiFetch } from "../api/api";
 import "./create-property.css";
 import { useNavigate } from "react-router-dom";
 import MiniVerticalNav from "../components/MiniVerticalNav";
-
+import ListingPaymentModal from "../components/ListingPaymentModal";
 
 export default function CreateProperty() {
   const [loading, setLoading] = useState(false);
   const [propertyId, setPropertyId] = useState(null);
   const [images, setImages] = useState([]);
+
+  // 🔥 Listing payment popup state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
   const navigate = useNavigate();
-
-
-
-  const handleImagesChange = (e) => {
-  setImages(Array.from(e.target.files));
-};
-
-const isFormValid = () => {
-  return (
-    form.title &&
-    form.location &&
-    form.address &&
-    form.city &&
-    form.state &&
-    form.pincode &&
-    form.contact_name &&
-    form.contact_phone &&
-    form.contact_email &&
-    Number(form.price) > 0 &&
-    Number(form.area_sqft) > 0
-  );
-};
-
-
-
 
   const [form, setForm] = useState({
     title: "",
@@ -71,6 +51,8 @@ const isFormValid = () => {
     investors_max: 50,
   });
 
+  /* ---------------- HELPERS ---------------- */
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({
@@ -79,96 +61,121 @@ const isFormValid = () => {
     });
   };
 
+  const handleImagesChange = (e) => {
+    setImages(Array.from(e.target.files));
+  };
 
-  const buildPayload = () => {
-  return {
+  const isFormValid = () => {
+    return (
+      form.title &&
+      form.location &&
+      form.address &&
+      form.city &&
+      form.state &&
+      form.pincode &&
+      form.contact_name &&
+      form.contact_phone &&
+      form.contact_email &&
+      Number(form.price) > 0 &&
+      Number(form.area_sqft) > 0
+    );
+  };
+
+  const buildPayload = () => ({
     ...form,
-
-    // numbers
-    price: form.price ? Number(form.price) : null,
+    price: Number(form.price),
     rent_price: form.rent_price ? Number(form.rent_price) : null,
     area_sqft: Number(form.area_sqft),
     bedrooms: Number(form.bedrooms),
     bathrooms: Number(form.bathrooms),
     floors: Number(form.floors),
     parking_spaces: Number(form.parking_spaces),
-
     investors_required: Number(form.investors_required),
     investors_min: Number(form.investors_min),
     investors_max: Number(form.investors_max),
+  });
 
-    // trim required strings
-    title: form.title.trim(),
-    description: form.description.trim(),
-    location: form.location.trim(),
-    address: form.address.trim(),
-    city: form.city.trim(),
-    state: form.state.trim(),
-    pincode: form.pincode.trim(),
-    contact_name: form.contact_name.trim(),
-    contact_phone: form.contact_phone.trim(),
-    contact_email: form.contact_email.trim(),
-  };
-};
-
-
-const uploadImages = async () => {
-  if (!propertyId || images.length === 0) {
-    alert("Select images first");
-    return;
-  }
-
-  const formData = new FormData();
-  images.forEach((img) => formData.append("images", img));
-
-  try {
-    await apiFetch(`/properties/${propertyId}/images/`, {
-      method: "POST",
-      body: formData, // 🚫 DO NOT stringify
-    });
-
-    alert("Images uploaded successfully");
-    navigate("/");
-  } catch (err) {
-    alert("Image upload failed");
-  }
-};
-
-
+  /* ---------------- SUBMIT PROPERTY ---------------- */
 
   const submitProperty = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!isFormValid()) {
-    alert("Please fill all required fields correctly");
-    return;
-  }
+    if (!isFormValid()) {
+      alert("Please fill all required fields correctly");
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const res = await apiFetch("/properties/", {
-      method: "POST",
-      body: JSON.stringify(buildPayload()),
-    });
+    try {
+      const res = await apiFetch("/properties/", {
+        method: "POST",
+        body: JSON.stringify(buildPayload()),
+      });
 
-    setPropertyId(res.id);
-    alert("Property created. Now upload images.");
-  } catch (err) {
-    alert(JSON.stringify(err)); // 👈 SHOW REAL ERROR
-  } finally {
-    setLoading(false);
-  }
-};
+      // 🔥 Save property ID & open payment popup
+      setPropertyId(res.id);
+      setShowPaymentModal(true);
+    } catch (err) {
+      alert(err?.detail || JSON.stringify(err));
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  /* ---------------- LISTING PAYMENT ---------------- */
+
+  const handleListingPayment = async () => {
+    setPaymentLoading(true);
+
+    try {
+      const res = await apiFetch(
+        `/properties/${propertyId}/request-listing/`,
+        { method: "POST" }
+      );
+
+      alert(res.message || "Listing request created");
+      setShowPaymentModal(false);
+    } catch (err) {
+      alert(err?.error || err?.detail || "Payment failed");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  /* ---------------- IMAGE UPLOAD ---------------- */
+
+  const uploadImages = async () => {
+    if (!propertyId || images.length === 0) {
+      alert("Select images first");
+      return;
+    }
+
+    const formData = new FormData();
+    images.forEach((img) => formData.append("images", img));
+
+    try {
+      await apiFetch(`/properties/${propertyId}/images/`, {
+        method: "POST",
+        body: formData,
+      });
+
+      alert("Images uploaded successfully");
+      navigate("/my-properties");
+    } catch (err) {
+      alert("Image upload failed");
+    }
+  };
+
+  /* ---------------- UI ---------------- */
 
   return (
     <div className="create-property">
       <h2>Create Property</h2>
 
       <div className="market-sidebar">
-  <MiniVerticalNav />
-</div>
+        <MiniVerticalNav />
+      </div>
 
       <form onSubmit={submitProperty}>
         <input name="title" placeholder="Title" onChange={handleChange} required />
@@ -187,7 +194,7 @@ const uploadImages = async () => {
           <option value="both">Sale & Rent</option>
         </select>
 
-        <input name="price" type="number" placeholder="Price" onChange={handleChange} required />
+        <input name="price" type="number" placeholder="Price" required onChange={handleChange} />
         <input name="rent_price" type="number" placeholder="Rent Price (optional)" onChange={handleChange} />
 
         <input name="location" placeholder="Location" required onChange={handleChange} />
@@ -196,34 +203,9 @@ const uploadImages = async () => {
         <input name="state" placeholder="State" required onChange={handleChange} />
         <input name="pincode" placeholder="Pincode" required onChange={handleChange} />
 
-        <input name="area_sqft" required type="number" placeholder="Area (sqft)" onChange={handleChange} />
+        <input name="area_sqft" type="number" placeholder="Area (sqft)" required onChange={handleChange} />
         <input name="bedrooms" type="number" placeholder="Bedrooms" onChange={handleChange} />
         <input name="bathrooms" type="number" placeholder="Bathrooms" onChange={handleChange} />
-
-        <h4>Features</h4>
-        {[
-          "furnished",
-          "ac_available",
-          "balcony",
-          "gym",
-          "swimming_pool",
-          "garden",
-          "security",
-          "lift_available",
-          "power_backup",
-        ].map((f) => (
-          <label key={f}>
-            <input type="checkbox" name={f} onChange={handleChange} /> {f}
-          </label>
-        ))}
-
-        <h4>Investment</h4>
-        <label>
-          <input type="checkbox" name="investment_enabled" onChange={handleChange} />
-          Enable Group Investment
-        </label>
-
-        <input name="investors_required" type="number" placeholder="Investors Required" onChange={handleChange} />
 
         <h4>Contact</h4>
         <input name="contact_name" placeholder="Contact Name" required onChange={handleChange} />
@@ -236,22 +218,22 @@ const uploadImages = async () => {
       </form>
 
       {propertyId && (
-  <>
-    <h4>Upload Images</h4>
+        <>
+          <h4>Upload Images</h4>
+          <input type="file" multiple accept="image/*" onChange={handleImagesChange} />
+          <button type="button" onClick={uploadImages}>
+            Upload Images
+          </button>
+        </>
+      )}
 
-    <input
-      type="file"
-      multiple
-      accept="image/*"
-      onChange={handleImagesChange}
-    />
-
-    <button type="button" onClick={uploadImages}>
-      Upload Images
-    </button>
-  </>
-)}
-
+      {/* 🔥 LISTING PAYMENT POPUP */}
+      <ListingPaymentModal
+        open={showPaymentModal}
+        loading={paymentLoading}
+        onClose={() => setShowPaymentModal(false)}
+        onConfirm={handleListingPayment}
+      />
     </div>
   );
 }

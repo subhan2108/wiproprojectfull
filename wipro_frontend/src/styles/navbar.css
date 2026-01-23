@@ -532,3 +532,14 @@ transition: color 0.25s ease; /* 🔥 text color animation */
 .get-started-btn:hover {
   background: #059669;
 }
+
+
+
+.currency-btn {
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  background: white;
+  color: black;
+}

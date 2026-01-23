@@ -133,4 +133,18 @@ path('<uuid:pk>/', views.PropertyDetailView.as_view(), name='property-detail'),
 
 
 
+# 🔹 PROPERTY LISTING REQUEST
+path(
+    "<uuid:property_id>/request-listing/",
+    CreatePropertyListingRequestView.as_view(),
+    name="request-property-listing"
+),
+
+path(
+    "listing-requests/my/",
+    MyListingRequestsView.as_view(),
+    name="my-listing-requests"
+),
+
+
 ]

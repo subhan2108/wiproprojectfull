@@ -151,6 +151,7 @@ export default function PaymentPage() {
     <option value="loan due">Loan Due</option>
     <option value="investment">Investment</option>
     <option value="wallet topup">Wallet Top-up</option>
+    <option value="wallet topup">Property listing</option>
   </select>
 
   {/* PAYMENT DETAILS */}

@@ -47,6 +47,8 @@ import EditPropertyPage from "./pages/EditPropertyPage";
 import PropertyRequestForm from "./pages/PropertyRequestForm";
 import MyPropertyRequests from "./pages/MyPropertyRequests";
 import CommitteeWithdraw from "./pages/CommitteeWithdraw";
+import Footer from "./components/Footer";
+
 
 
 

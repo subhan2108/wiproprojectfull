@@ -3,9 +3,13 @@ import { apiFetch } from "../api/api";
 import "./PropertyDetailContent.css";
 import { useNavigate } from "react-router-dom";
 
+import { useCurrency } from "../context/CurrencyContext";
+import { formatPrice } from "../utils/currency";
+
 export default function PropertyDetailContent({ propertyId }) {
   const [property, setProperty] = useState(null);
   const navigate = useNavigate();
+  const { currency } = useCurrency(); // ✅ GLOBAL CURRENCY
 
   useEffect(() => {
     apiFetch(`/properties/${propertyId}/`).then(setProperty);
@@ -13,7 +17,6 @@ export default function PropertyDetailContent({ propertyId }) {
 
   if (!property) return <p>Loading...</p>;
 
-  // 🧠 Decide which status to show
   const displayStatus = property.user_request_status
     ? `YOUR REQUEST: ${property.user_request_status.toUpperCase()}`
     : property.status.toUpperCase();
@@ -34,9 +37,10 @@ export default function PropertyDetailContent({ propertyId }) {
         </div>
 
         <div className="pd-header-right">
-          <div className="pd-price">₹ {property.price}</div>
+          <div className="pd-price">
+            {formatPrice(property.price, currency)}
+          </div>
 
-          {/* ✅ USER-AWARE STATUS */}
           <span className={`pd-status ${statusClass}`}>
             {displayStatus}
           </span>
@@ -46,30 +50,12 @@ export default function PropertyDetailContent({ propertyId }) {
       {/* ================= DETAILS ================= */}
       <div className="pd-card">
         <div className="pd-grid">
-          <div>
-            <i className="bi bi-house"></i>
-            <span>{property.property_type}</span>
-          </div>
-          <div>
-            <i className="bi bi-tag"></i>
-            <span>{property.listing_type}</span>
-          </div>
-          <div>
-            <i className="bi bi-aspect-ratio"></i>
-            <span>{property.area_sqft} sqft</span>
-          </div>
-          <div>
-            <i className="bi bi-door-open"></i>
-            <span>{property.bedrooms} Beds</span>
-          </div>
-          <div>
-            <i className="bi bi-droplet"></i>
-            <span>{property.bathrooms} Baths</span>
-          </div>
-          <div>
-            <i className="bi bi-eye"></i>
-            <span>{property.views_count} Views</span>
-          </div>
+          <div><i className="bi bi-house"></i><span>{property.property_type}</span></div>
+          <div><i className="bi bi-tag"></i><span>{property.listing_type}</span></div>
+          <div><i className="bi bi-aspect-ratio"></i><span>{property.area_sqft} sqft</span></div>
+          <div><i className="bi bi-door-open"></i><span>{property.bedrooms} Beds</span></div>
+          <div><i className="bi bi-droplet"></i><span>{property.bathrooms} Baths</span></div>
+          <div><i className="bi bi-eye"></i><span>{property.views_count} Views</span></div>
         </div>
       </div>
 
@@ -83,15 +69,10 @@ export default function PropertyDetailContent({ propertyId }) {
       <div className="pd-card">
         <h4>Interested in this property?</h4>
 
-        {/* ✅ BUTTON LOGIC */}
         {property.user_request_status === "pending" ? (
-          <button className="pd-btn disabled" disabled>
-            Request Pending
-          </button>
+          <button className="pd-btn disabled" disabled>Request Pending</button>
         ) : property.user_request_status === "approved" ? (
-          <button className="pd-btn success" disabled>
-            Request Approved
-          </button>
+          <button className="pd-btn success" disabled>Request Approved</button>
         ) : property.user_request_status === "rejected" ? (
           <button
             className="pd-btn"
@@ -108,17 +89,13 @@ export default function PropertyDetailContent({ propertyId }) {
           </button>
         )}
 
-        {/* ✅ USER MESSAGE */}
         <p className="pd-note">
           {property.user_request_status === "pending" &&
             "⏳ Your request is under review by the owner."}
-
           {property.user_request_status === "approved" &&
             "✅ Your request was approved. Owner will contact you."}
-
           {property.user_request_status === "rejected" &&
             "❌ Your request was rejected. You may submit a new request."}
-
           {!property.user_request_status &&
             "Fill a short form. Owner will review your request."}
         </p>

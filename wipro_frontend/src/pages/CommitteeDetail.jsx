@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/api";
+import { useCurrency } from "../context/CurrencyContext";
+import { formatPrice } from "../utils/currency";
 
 
 export default function CommitteeDetail() {
@@ -14,6 +16,8 @@ export default function CommitteeDetail() {
   const [notifications, setNotifications] = useState([]);
   const [dueNotifications, setDueNotifications] = useState([]);
   const [committeeDues, setCommitteeDues] = useState([]);
+
+  const { currency } = useCurrency(); // ✅ GLOBAL CURRENCY
 
 
   /* 🔹 Committee details */
@@ -145,13 +149,9 @@ const handleCommitteeDuePayNow = async (d) => {
           marginTop: 20,
         }}
       >
-        <StatBox label="Invested" value={`₹${data.invested}`} />
-        <StatBox label="Withdrawn" value={`₹${data.withdrawn}`} />
-        <StatBox
-          label="After 1 Year"
-          value={`₹${data.expected_after_year}`}
-          highlight
-        />
+         <StatBox label="Invested" value={formatPrice(data.invested, currency)} />
+        <StatBox label="Withdrawn" value={formatPrice(data.withdrawn, currency)} />
+        <StatBox label="After 1 Year" value={formatPrice(data.expected_after_year, currency)} highlight />
       </div>
 
       {/* 🔹 PAYMENT PLANS */}
@@ -172,7 +172,7 @@ const handleCommitteeDuePayNow = async (d) => {
             <div>
               <h4>{plan.name}</h4>
               <p style={{ fontSize: 14, color: "#6b7280" }}>
-                ₹{plan.amount} • {plan.type.toUpperCase()} • Every{" "}
+                {formatPrice(plan.amount, currency)} • {plan.type.toUpperCase()} • Every{" "}
                 {plan.interval_days} days
               </p>
 
@@ -317,7 +317,7 @@ const handleCommitteeDuePayNow = async (d) => {
                 }}
               >
                 <p>
-                  <b>₹{d.amount}</b> due for <b>{d.committee_name}</b> (
+                  <b>{formatPrice(d.amount, currency)}</b> due for <b>{d.committee_name}</b> (
                   {d.plan_name})
                 </p>
 

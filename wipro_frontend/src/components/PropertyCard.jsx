@@ -5,16 +5,19 @@ import { uploadPropertyImages } from "../api/propertyImages";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 
+import { useCurrency } from "../context/CurrencyContext";
+import { formatPrice } from "../utils/currency";
+
 export default function PropertyCard({ property, onImageUploaded }) {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  const { currency } = useCurrency(); // ✅ GLOBAL CURRENCY
 
   const handleImageUpload = async (files) => {
     try {
       setUploading(true);
       await uploadPropertyImages(property.id, Array.from(files));
-
-      // ✅ tell parent to refresh
       onImageUploaded?.();
     } catch (err) {
       alert("Image upload failed");
@@ -63,7 +66,10 @@ export default function PropertyCard({ property, onImageUploaded }) {
           </p>
 
           <div className="property-price-row">
-            <span className="property-price">₹{property.price}</span>
+            <span className="property-price">
+              {formatPrice(property.price, currency)}
+            </span>
+
             {property.is_verified && (
               <span className="property-verified">VERIFIED</span>
             )}

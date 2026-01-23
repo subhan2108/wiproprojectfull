@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import "../styles/navbar.css";
 import logo from "../assets/wipo-logo.webp";
 import { apiFetch } from "../api/api";
+import { useCurrency } from "../context/CurrencyContext";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -11,6 +12,7 @@ export default function Navbar() {
   const dropdownRef = useRef();
   const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem("access_token");
+  const { currency, toggleCurrency } = useCurrency();
 
 
   useEffect(() => {
@@ -64,12 +66,15 @@ export default function Navbar() {
           {/* CENTER */}
           <ul className="navbar-links desktop-only">
             <li><NavLink to="/home">Home</NavLink></li>
-            <li><NavLink to="/properties">Properties</NavLink></li>
+            <li><NavLink to="/">Properties</NavLink></li>
             <li><NavLink to="/about">About</NavLink></li>
             <li><NavLink to="/contact">Contact</NavLink></li>
             <li><NavLink to="/committees">Committees</NavLink></li>
             <li><NavLink to="/wallet">Wallet</NavLink></li>
             <li><NavLink to="/referral">Refer & Earn</NavLink></li>
+            <button onClick={toggleCurrency} className="currency-btn">
+      {currency === "INR" ? "₹ INR" : "$ USD"}
+    </button>
           </ul>
 
           {/* RIGHT */}

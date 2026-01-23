@@ -2,13 +2,17 @@ import React, { useEffect, useState } from "react";
 import "./Wallet.css";
 import { apiFetch } from "../api/api";
 
+import { useCurrency } from "../context/CurrencyContext";
+import { formatPrice } from "../utils/currency";
 
 const Wallet = () => {
+  const { currency } = useCurrency();
+
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
 
-
+  /* 🔹 Wallet summary */
   useEffect(() => {
     apiFetch("/me/")
       .then((res) => {
@@ -18,23 +22,19 @@ const Wallet = () => {
       .catch(() => setLoading(false));
   }, []);
 
+  /* 🔹 Wallet transactions */
   useEffect(() => {
-  apiFetch("/wallet-payments/")
-    .then((res) => {
-      console.table(res);
-      setTransactions(res);
-    })
-    .catch((err) => console.error(err));
-}, []);
-
-
+    apiFetch("/wallet-payments/")
+      .then((res) => setTransactions(res))
+      .catch(console.error);
+  }, []);
 
   if (loading) return <p style={{ padding: 40 }}>Loading wallet...</p>;
   if (!wallet) return <p style={{ padding: 40 }}>Failed to load wallet</p>;
 
   return (
     <div className="wallet-container">
-      {/* Header */}
+      {/* HEADER */}
       <div className="wallet-header">
         <span className="security-badge">INSTITUTIONAL GRADE SECURITY</span>
         <h1>
@@ -42,11 +42,12 @@ const Wallet = () => {
         </h1>
       </div>
 
-      {/* Portfolio Card (Net Balance) */}
+      {/* PORTFOLIO */}
       <div className="portfolio-card">
         <div>
           <p className="label">GLOBAL PORTFOLIO VALUE</p>
-          <h2>₹{wallet.net_balance}</h2>
+          <h2>{formatPrice(wallet.net_balance, currency)}</h2>
+
           <div className="portfolio-meta">
             <span className="growth">LIVE CALCULATED</span>
             <span className="instant">INSTANT PAYOUTS</span>
@@ -59,76 +60,78 @@ const Wallet = () => {
         </div>
       </div>
 
-      {/* Wallet Stats */}
+      {/* STATS */}
       <div className="stats-grid">
-        {/* TOTAL INVESTED */}
         <div className="stat-card">
           <p>TOTAL DEPOSIT</p>
-          <h3>₹{wallet.total_invested}</h3>
+          <h3>{formatPrice(wallet.total_invested, currency)}</h3>
           <small>Coming Soon</small>
         </div>
 
-        {/* TOTAL WITHDRAWN */}
         <div className="stat-card">
           <p>TOTAL WITHDRAW</p>
-          <h3>₹{wallet.total_withdrawn}</h3>
+          <h3>{formatPrice(wallet.total_withdrawn, currency)}</h3>
           <small>Coming Soon</small>
         </div>
 
-        {/* BONUS BALANCE (EMPTY FOR NOW) */}
         <div className="stat-card">
           <p>BONUS BALANCE</p>
-          <h3 className="green">₹{wallet.bonus_balance}</h3>
+          <h3 className="green">
+            {formatPrice(wallet.bonus_balance, currency)}
+          </h3>
           <small>Coming Soon</small>
         </div>
       </div>
 
-      {/* 🔥 NEW ROW: EARNED / PAID / NET */}
+      {/* EARNED / PAID / NET */}
       <div className="stats-grid">
         <div className="stat-card">
           <p>TOTAL EARNED</p>
-          <h3 className="green">₹{wallet.total_earned}</h3>
+          <h3 className="green">
+            {formatPrice(wallet.total_earned, currency)}
+          </h3>
           <small>Coming Soon</small>
         </div>
 
         <div className="stat-card">
           <p>TOTAL PAID</p>
-          <h3 className="red">₹{wallet.total_paid}</h3>
+          <h3 className="red">
+            {formatPrice(wallet.total_paid, currency)}
+          </h3>
           <small>Coming Soon</small>
         </div>
 
         <div className="stat-card highlight">
           <p>NET BALANCE</p>
-          <h3>₹{wallet.net_balance}</h3>
+          <h3>{formatPrice(wallet.net_balance, currency)}</h3>
           <small>Coming Soon</small>
         </div>
       </div>
 
-      {/* Transaction History */}
-<div className="transaction-box">
-  <h4>ASSET TRANSACTION HISTORY</h4>
+      {/* TRANSACTION HISTORY */}
+      <div className="transaction-box">
+        <h4>ASSET TRANSACTION HISTORY</h4>
 
-  {transactions.length === 0 && (
-    <p style={{ padding: "10px 0", color: "#999" }}>
-      No transactions found
-    </p>
-  )}
+        {transactions.length === 0 && (
+          <p style={{ padding: "10px 0", color: "#999" }}>
+            No transactions found
+          </p>
+        )}
 
-  {transactions.map((tx) => (
-    <div className="transaction" key={tx.id}>
-      <div>
-        <small>{tx.created_at}</small>
-        <p>{tx.payment_method}</p>
+        {transactions.map((tx) => (
+          <div className="transaction" key={tx.id}>
+            <div>
+              <small>{tx.created_at}</small>
+              <p>{tx.payment_method}</p>
+            </div>
+
+            <span className={tx.tx_type === "earn" ? "credit" : "debit"}>
+              {tx.tx_type === "earn" ? "+" : "-"}{" "}
+              {formatPrice(tx.amount, currency)}
+            </span>
+          </div>
+        ))}
       </div>
-
-      <span className={tx.tx_type === "earn" ? "credit" : "debit"}>
-        {tx.tx_type === "earn" ? "+" : "-"} ₹{tx.amount}
-      </span>
-    </div>
-  ))}
-</div>
-
-
     </div>
   );
 };

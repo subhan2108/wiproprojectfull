@@ -4,6 +4,9 @@ import { apiFetch } from "../api/api";
 import JoinCommitteeModal from "../components/JoinCommitteeModal";
 import "../styles/committee.css";
 
+import { useCurrency } from "../context/CurrencyContext";
+import { formatPrice } from "../utils/currency";
+
 export default function CommitteeList() {
   const [committees, setCommittees] = useState([]);
   const [joinedCommitteeMap, setJoinedCommitteeMap] = useState({});
@@ -11,6 +14,7 @@ export default function CommitteeList() {
   const [selectedCommittee, setSelectedCommittee] = useState(null);
 
   const navigate = useNavigate();
+  const { currency } = useCurrency(); // ✅ GLOBAL CURRENCY
 
   useEffect(() => {
     Promise.all([
@@ -20,7 +24,6 @@ export default function CommitteeList() {
       .then(([committeesData, myCommitteesData]) => {
         setCommittees(committeesData);
 
-        // map committee_id -> user_committee_id
         const map = {};
         myCommitteesData.committees.forEach((uc) => {
           map[uc.committee_id] = uc.id;
@@ -50,15 +53,12 @@ export default function CommitteeList() {
 
           return (
             <div className="committee-card" key={c.id}>
-              
-              {/* 🔴 LAST SLOTS WARNING */}
               {slotsLeft > 0 && slotsLeft <= 2 && (
                 <span className="slots-warning">
                   Only {slotsLeft} slots left
                 </span>
               )}
 
-              {/* TITLE */}
               <h3 className="committee-title">
                 <i className="bi bi-graph-up committee-icon"></i> {c.name}
               </h3>
@@ -70,7 +70,7 @@ export default function CommitteeList() {
                   <div>
                     <span>Daily Investment</span>
                     <strong>
-                      ₹{Number(c.daily_amount).toLocaleString("en-IN")}
+                      {formatPrice(c.daily_amount, currency)}
                     </strong>
                   </div>
                 )}
@@ -78,7 +78,7 @@ export default function CommitteeList() {
                   <div>
                     <span>Monthly Investment</span>
                     <strong>
-                      ₹{Number(c.monthly_amount).toLocaleString("en-IN")}
+                      {formatPrice(c.monthly_amount, currency)}
                     </strong>
                   </div>
                 )}
@@ -103,7 +103,7 @@ export default function CommitteeList() {
               <div className="return-box">
                 <p>Total Return After {c.duration_months} Months</p>
                 <h4>
-                  ₹{Number(c.expected_total_return).toLocaleString("en-IN")}
+                  {formatPrice(c.expected_total_return, currency)}
                 </h4>
               </div>
 
@@ -124,7 +124,7 @@ export default function CommitteeList() {
                 </div>
               </div>
 
-              {/* ACTION BUTTON */}
+              {/* ACTION */}
               <button
                 className="join-btn"
                 disabled={slotsLeft === 0 && !isJoined}
@@ -147,15 +147,12 @@ export default function CommitteeList() {
         })}
       </div>
 
-      {/* JOIN MODAL */}
       {selectedCommittee && (
         <JoinCommitteeModal
           committee={selectedCommittee}
           onClose={() => setSelectedCommittee(null)}
         />
       )}
-
-      
     </div>
   );
 }
