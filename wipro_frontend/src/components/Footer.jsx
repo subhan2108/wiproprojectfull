@@ -69,11 +69,7 @@ export default function Footer() {
           Back to top ↑
         </button>
 
-        <span>
-  Design by <a href="https://kaizensclan.com/" target="_blank" rel="noopener noreferrer">
-    Kaizens Clan
-  </a>
-</span>
+        <span>Design by Kaizens clan</span>
       </div>
     </footer>
   );

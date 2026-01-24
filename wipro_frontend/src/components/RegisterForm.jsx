@@ -339,13 +339,7 @@ const RegisterForm = () => {
       </div>
 
       <div className="registration-info">
-        <p><strong>Account Benefits:</strong></p>
-        <ul>
-          <li>✅ Secure JWT Authentication</li>
-          <li>✅ Profile Management</li>
-          <li>✅ Data Export & Settings</li>
-          <li>✅ Session Management</li>
-        </ul>
+      
       </div>
     </div>
   );

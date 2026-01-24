@@ -300,11 +300,11 @@ if (["pending", "approved", "rejected"].includes(status)) {
     </div>
 
     <button
-      className="submit"
+      className="submit-btn"
       onClick={submitKYC}
       disabled={loading}
     >
-      {loading ? "Submitting..." : "COMPLETE KYC PROCESS"}
+      {loading ? "Submitting..." : "COMPLETE KYC PROCESS →"}
     </button>
 
     <p className="footer-note">
