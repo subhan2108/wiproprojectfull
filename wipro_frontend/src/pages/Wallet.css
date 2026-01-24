@@ -19,6 +19,8 @@
 
 .wallet-header h1 span {
   color: #0bb783;
+  font-size: larger;
+  font-style: italic;
 }
 
 /* Portfolio */
@@ -129,4 +131,16 @@
 .debit {
   color: #ff4d4f;
   font-weight: 600;
+}
+
+
+
+@media (max-width: 480px) {
+    .portfolio-card {
+        display: contents;
+    }
+
+    .stats-grid{
+      grid-template-columns: repeat(1 , 1fr)
+    }
 }

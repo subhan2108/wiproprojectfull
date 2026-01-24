@@ -48,7 +48,7 @@ export default function Footer() {
 
           <div className="connect-item">
             <i className="bi bi-envelope"></i>
-            <span>wipogroupn@gmail.com</span>
+            <span>wipogroup@gmail.com</span>
           </div>
 
           <div className="connect-item">
@@ -68,6 +68,8 @@ export default function Footer() {
         >
           Back to top ↑
         </button>
+
+        <span>Design by Kaizens clan</span>
       </div>
     </footer>
   );

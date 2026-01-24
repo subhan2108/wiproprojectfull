@@ -186,7 +186,7 @@ export default function PaymentPage() {
       cursor: "pointer",
     }}
   >
-    I Have Paid
+    I Have Paid / I Have Withdraw
   </button>
 </div>
 

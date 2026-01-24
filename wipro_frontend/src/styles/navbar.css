@@ -698,7 +698,7 @@ transition: color 0.25s ease; /* 🔥 text color animation */
    DROPDOWN
 ============================= */
 .user-dropdown {
-  position: absolute;
+  position: fixed;
   top: 60px;
   right: 0;
   width: 230px;

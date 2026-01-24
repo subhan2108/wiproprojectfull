@@ -1,12 +1,12 @@
 // Get environment variables
-//const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-//const AUTH_PREFIX = import.meta.env.VITE_AUTH_ENDPOINTS_PREFIX || "/auth";
-//const TOKEN_REFRESH_ENDPOINT = import.meta.env.VITE_TOKEN_REFRESH_ENDPOINT || "/auth/token/refresh/";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const AUTH_PREFIX = import.meta.env.VITE_AUTH_ENDPOINTS_PREFIX || "/auth";
+const TOKEN_REFRESH_ENDPOINT = import.meta.env.VITE_TOKEN_REFRESH_ENDPOINT || "/auth/token/refresh/";
 
 
- const API_BASE_URL = "https://wipobackend.onrender.com/api";
- const AUTH_PREFIX = "/auth";
- const TOKEN_REFRESH_ENDPOINT ="/auth/token/refresh/";
+ //const API_BASE_URL = "https://wiproadmin.onrender.com/api";
+ //const AUTH_PREFIX = "/auth";
+ //const TOKEN_REFRESH_ENDPOINT ="/auth/token/refresh/";
 
 
 
@@ -98,8 +98,11 @@ const logoutUser = async () => {
     }
   }
 
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
+  localStorage.setItem("access_token", refreshData.access);
+  
+if (refreshData.refresh) {
+  localStorage.setItem("refresh_token", refreshData.refresh);
+}
   window.location.href = '/login';
 };
 
@@ -262,8 +265,11 @@ export const authAPI = {
       }
     }
 
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    localStorage.setItem("access_token", refreshData.access);
+    
+if (refreshData.refresh) {
+  localStorage.setItem("refresh_token", refreshData.refresh);
+}
     window.location.href = '/login';
   },
 

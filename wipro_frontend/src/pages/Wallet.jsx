@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Wallet.css";
 import { apiFetch } from "../api/api";
+import { Link } from "react-router-dom";
 
 import { useCurrency } from "../context/CurrencyContext";
 import { formatPrice } from "../utils/currency";
@@ -55,8 +56,12 @@ const Wallet = () => {
         </div>
 
         <div className="actions">
-          <button className="deposit-btn">＋ DEPOSIT</button>
-          <button className="withdraw-btn">↙ WITHDRAW</button>
+          <Link to="/pay">
+  <button className="deposit-btn">＋ DEPOSIT</button>
+</Link>
+          <Link to="/pay">
+  <button className="withdraw-btn">↙ WITHDRAW</button>
+</Link>
         </div>
       </div>
 
@@ -65,13 +70,13 @@ const Wallet = () => {
         <div className="stat-card">
           <p>TOTAL DEPOSIT</p>
           <h3>{formatPrice(wallet.total_invested, currency)}</h3>
-          <small>Coming Soon</small>
+          <small>Total Investmest </small>
         </div>
 
         <div className="stat-card">
           <p>TOTAL WITHDRAW</p>
           <h3>{formatPrice(wallet.total_withdrawn, currency)}</h3>
-          <small>Coming Soon</small>
+          <small>Total Withdraw</small>
         </div>
 
         <div className="stat-card">
@@ -79,7 +84,7 @@ const Wallet = () => {
           <h3 className="green">
             {formatPrice(wallet.bonus_balance, currency)}
           </h3>
-          <small>Coming Soon</small>
+          <small>Roi</small>
         </div>
       </div>
 
@@ -90,7 +95,7 @@ const Wallet = () => {
           <h3 className="green">
             {formatPrice(wallet.total_earned, currency)}
           </h3>
-          <small>Coming Soon</small>
+          <small>Total Earning</small>
         </div>
 
         <div className="stat-card">
@@ -98,13 +103,13 @@ const Wallet = () => {
           <h3 className="red">
             {formatPrice(wallet.total_paid, currency)}
           </h3>
-          <small>Coming Soon</small>
+          <small>Amount you Spent</small>
         </div>
 
         <div className="stat-card highlight">
           <p>NET BALANCE</p>
           <h3>{formatPrice(wallet.net_balance, currency)}</h3>
-          <small>Coming Soon</small>
+          <small>Current Balance</small>
         </div>
       </div>
 

@@ -130,7 +130,7 @@ const RegisterForm = () => {
       if (result.success) {
         showAlert('✅ Account created successfully! Redirecting to dashboard...', 'success');
         setTimeout(() => {
-          navigate('/dashboard');
+          navigate('/profile-kyc');
         }, 2000);
       } else {
         showAlert(result.message || 'Registration failed. Please try again.', 'error');

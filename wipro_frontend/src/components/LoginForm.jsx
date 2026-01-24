@@ -18,7 +18,7 @@ const LoginForm = () => {
   const location = useLocation();
 
   // Get the page user was trying to visit before login
-  const from = location.state?.from?.pathname || '/dashboard';
+  const from = location.state?.from?.pathname || '/home';
 
   const showAlert = (message, type = 'info') => {
     setAlert({ show: true, message, type });

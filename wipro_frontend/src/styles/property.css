@@ -487,6 +487,7 @@
   font-weight: 600;
   padding: 6px 12px;
   border-radius: 20px;
+  z-index: 9;
 }
 
 /* BODY */
