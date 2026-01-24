@@ -1,22 +1,25 @@
 import "./ListingPaymentModal.css";
 import { useNavigate } from "react-router-dom";
+import { useCurrency } from "../context/CurrencyContext";
 
 export default function ListingPaymentModal({
   open,
   onClose,
-  onSuccess, // optional, kept for backward compatibility
+  onSuccess,
   loading,
 }) {
   const navigate = useNavigate();
+  const { formatPrice, currency } = useCurrency();
+
+  const LISTING_FEE = 1000; // INR base
 
   if (!open) return null;
 
   const handlePay = () => {
-    // Navigate to payment page
     navigate("/pay", {
       state: {
         purpose: "property_listing",
-        amount: 1000,
+        amount: LISTING_FEE, // 🔥 STILL INR
         request_type: "deposit",
       },
     });
@@ -29,7 +32,7 @@ export default function ListingPaymentModal({
 
         <p>
           To list your property on the main marketplace, you need to pay a
-          <strong> ₹1000 listing fee</strong>.
+          <strong> {formatPrice(LISTING_FEE)} listing fee</strong>.
         </p>
 
         <div className="modal-actions">
@@ -42,9 +45,17 @@ export default function ListingPaymentModal({
             onClick={handlePay}
             disabled={loading}
           >
-            {loading ? "Processing..." : "Pay ₹1000"}
+            {loading
+              ? "Processing..."
+              : `Pay ${formatPrice(LISTING_FEE)}`}
           </button>
         </div>
+
+        {currency !== "INR" && (
+          <small className="currency-note">
+            * You will be charged in INR at checkout
+          </small>
+        )}
       </div>
     </div>
   );

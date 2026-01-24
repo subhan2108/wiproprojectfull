@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api/api";
+import { useCurrency } from "../context/CurrencyContext";
 
 export default function PaymentHistory() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const { formatPrice, currency } = useCurrency();
 
   useEffect(() => {
     apiFetch("/payment-history/")
@@ -34,7 +37,7 @@ export default function PaymentHistory() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <strong>₹{p.amount}</strong>
+            <strong>{formatPrice(p.amount)}</strong>
             <StatusBadge status={p.status} />
           </div>
 
@@ -52,32 +55,14 @@ export default function PaymentHistory() {
               <b>Admin:</b> {p.admin_message}
             </p>
           )}
+
+          {currency !== "INR" && (
+            <small style={{ color: "#6b7280" }}>
+              * Charged in INR
+            </small>
+          )}
         </div>
       ))}
     </div>
-  );
-}
-
-function StatusBadge({ status }) {
-  const colors = {
-    pending: "#facc15",
-    approved: "#22c55e",
-    rejected: "#ef4444",
-    overdue: "#f97316",
-  };
-
-  return (
-    <span
-      style={{
-        padding: "4px 10px",
-        borderRadius: 20,
-        color: "#fff",
-        background: colors[status],
-        fontSize: 12,
-        textTransform: "uppercase",
-      }}
-    >
-      {status}
-    </span>
   );
 }
