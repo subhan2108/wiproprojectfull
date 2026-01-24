@@ -1,12 +1,26 @@
 import "./ListingPaymentModal.css";
+import { useNavigate } from "react-router-dom";
 
 export default function ListingPaymentModal({
   open,
   onClose,
-  onSuccess,
+  onSuccess, // optional, kept for backward compatibility
   loading,
 }) {
+  const navigate = useNavigate();
+
   if (!open) return null;
+
+  const handlePay = () => {
+    // Navigate to payment page
+    navigate("/pay", {
+      state: {
+        purpose: "property_listing",
+        amount: 1000,
+        request_type: "deposit",
+      },
+    });
+  };
 
   return (
     <div className="modal-backdrop">
@@ -25,7 +39,7 @@ export default function ListingPaymentModal({
 
           <button
             className="btn-pay"
-            onClick={onSuccess}
+            onClick={handlePay}
             disabled={loading}
           >
             {loading ? "Processing..." : "Pay ₹1000"}

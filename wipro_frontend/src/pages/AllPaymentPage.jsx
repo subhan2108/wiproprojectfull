@@ -13,6 +13,7 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState("");
   const [purpose, setPurpose] = useState("");
+  const [requestType, setRequestType] = useState(""); // deposit / withdraw
 
 
  
@@ -132,6 +133,25 @@ export default function PaymentPage() {
     }}
   />
 
+  <select
+                    value={requestType}
+                    onChange={(e) =>
+                      setRequestType(e.target.value)
+                    }
+                    style={{
+                      width: "100%",
+                      padding: 10,
+                      marginTop: 6,
+                      marginBottom: 16,
+                      borderRadius: 6,
+                      border: "1px solid #d1d5db",
+                    }}
+                  >
+                    <option value="">Select type</option>
+                    <option value="deposit">Deposit</option>
+                    <option value="withdraw">Withdraw</option>
+                  </select>
+
   {/* PURPOSE */}
   <label style={{ fontWeight: 600 }}>Purpose</label>
   <select
@@ -151,7 +171,9 @@ export default function PaymentPage() {
     <option value="loan due">Loan Due</option>
     <option value="investment">Investment</option>
     <option value="wallet topup">Wallet Top-up</option>
-    <option value="wallet topup">Property listing</option>
+     <option value="property_listing">
+                      Property Listing
+                    </option>
   </select>
 
   {/* PAYMENT DETAILS */}

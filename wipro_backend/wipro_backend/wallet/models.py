@@ -159,12 +159,6 @@ class PaymentTransaction(models.Model):
         help_text="Set by admin on approval"
     )
 
-    withdrawal_details = models.TextField(
-        blank=True,
-        null=True,
-        help_text="Bank / UPI / USDT details for withdrawal"
-    )
-
     reference_id = models.CharField(
         max_length=100,
         blank=True,

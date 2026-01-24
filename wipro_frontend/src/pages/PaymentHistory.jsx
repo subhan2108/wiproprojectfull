@@ -4,7 +4,6 @@ import { apiFetch } from "../api/api";
 export default function PaymentHistory() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
-  
 
   useEffect(() => {
     apiFetch("/payment-history/")
@@ -40,10 +39,11 @@ export default function PaymentHistory() {
           </div>
 
           <p><b>Method:</b> {p.payment_method || "—"}</p>
+
           <p>
-  <b>Purpose:</b>{" "}
-  {(p.context || "GENERAL").replace("_", " ").toUpperCase()}
-</p>
+            <b>Purpose:</b>{" "}
+            {p.purpose.replace("_", " ").toUpperCase()}
+          </p>
 
           <p><b>Date:</b> {p.created_at}</p>
 
