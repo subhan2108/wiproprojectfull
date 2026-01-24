@@ -6,6 +6,10 @@
   z-index: 1000;
 
     background-color: transparent;
+
+        font-size: 13px;
+    font-weight: 600;
+    color: #111827;
 }
 
 
@@ -355,7 +359,7 @@ transition: color 0.25s ease; /* 🔥 text color animation */
 
 
 .user-dropdown {
-  position: absolute;
+  position: fixed;
   top: 55px;
   right: 0;
   width: 220px;
@@ -494,7 +498,7 @@ transition: color 0.25s ease; /* 🔥 text color animation */
 /* Icons */
 .user-dropdown i {
   font-size: 16px;
-  color: #10b981; /* green */
+  color: #22c55e; /* green */
 }
 
 /* Logout */
@@ -520,7 +524,7 @@ transition: color 0.25s ease; /* 🔥 text color animation */
 }
 
 .get-started-btn {
-  background: #10b981;
+  background: #22c55e;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -542,4 +546,273 @@ transition: color 0.25s ease; /* 🔥 text color animation */
   cursor: pointer;
   background: white;
   color: black;
+  width: 1rem;
+  display: contents;
+}
+
+
+
+/* =============================
+   WRAPPER (STICKY)
+============================= */
+.navbar-wrapper {
+  position: sticky;
+  top: 10px;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  background: transparent;
+}
+
+/* =============================
+   PILL NAVBAR
+============================= */
+.navbar-pill {
+  width: 95%;
+  max-width: 1400px;
+  height: 72px;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+}
+
+/* =============================
+   LEFT
+============================= */
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo {
+  height: 36px;
+}
+
+/* =============================
+   CENTER LINKS
+============================= */
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 26px;
+}
+
+.navbar-links a {
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  position: relative;
+  padding-bottom: 6px;
+  transition: color 0.25s ease;
+}
+
+.navbar-links a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 18px;
+  height: 2px;
+  background: #22c55e;
+  border-radius: 999px;
+  transform: translateX(-50%) scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.navbar-links a:hover {
+  color: #22c55e;
+}
+
+.navbar-links a:hover::after,
+.navbar-links a.active::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.navbar-links a.active {
+  color: #22c55e;
+}
+
+/* =============================
+   RIGHT
+============================= */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Currency */
+.currency-btn {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: xx-large;
+  cursor: pointer;
+  color: #22c55e;
+}
+
+/* =============================
+   USER AVATAR
+============================= */
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: white;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dropdown-arrow {
+  transition: transform 0.25s ease;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* =============================
+   DROPDOWN
+============================= */
+.user-dropdown {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 230px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+  animation: fadeDown 0.25s ease forwards;
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.user-dropdown a,
+.user-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #1f2937;
+}
+
+.user-dropdown a:hover,
+.user-dropdown button:hover {
+  background: #f3f4f6;
+}
+
+.logout-btn {
+  color: #ef4444;
+}
+
+/* =============================
+   HAMBURGER
+============================= */
+.hamburger {
+  width: 36px;
+  height: 28px;
+  border: none;
+  background: none;
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.hamburger span {
+  height: 3px;
+  background: #111827;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.hamburger.open span:nth-child(1) {
+  transform: translateY(10px) rotate(45deg);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: translateY(-10px) rotate(-45deg);
+}
+
+/* =============================
+   MOBILE MENU
+============================= */
+.mobile-menu {
+  position: fixed;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 420px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.12);
+  padding: 20px 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-menu a {
+  display: block;
+  padding: 14px 24px;
+  font-weight: 600;
+  text-decoration: none;
+  color: #111827;
+}
+
+/* =============================
+   RESPONSIVE
+============================= */
+@media (max-width: 768px) {
+  .navbar-links {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
 }

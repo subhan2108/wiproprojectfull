@@ -67,18 +67,18 @@ export default function Navbar() {
           <ul className="navbar-links desktop-only">
             <li><NavLink to="/home">Home</NavLink></li>
             <li><NavLink to="/">Properties</NavLink></li>
-            <li><NavLink to="/about">About</NavLink></li>
-            <li><NavLink to="/contact">Contact</NavLink></li>
+            {/* <li><NavLink to="/about">About</NavLink></li>
+            <li><NavLink to="/contact">Contact</NavLink></li> */}
             <li><NavLink to="/committees">Committees</NavLink></li>
-            <li><NavLink to="/wallet">Wallet</NavLink></li>
+            
             <li><NavLink to="/referral">Refer & Earn</NavLink></li>
-            <button onClick={toggleCurrency} className="currency-btn">
-      {currency === "INR" ? "₹ INR" : "$ USD"}
-    </button>
           </ul>
 
           {/* RIGHT */}
          <div className="navbar-right" ref={dropdownRef}>
+          <button onClick={toggleCurrency} className="currency-btn">
+      {currency === "INR" ? "₹" : "$"}
+    </button>
 
   {isLoggedIn ? (
     <>
@@ -112,13 +112,11 @@ export default function Navbar() {
             <i className="bi bi-wallet2"></i> Wallet
           </NavLink>
 
-          <NavLink to="/kyc" onClick={() => setDropdownOpen(false)}>
+          <NavLink to="/prifile-kyc" onClick={() => setDropdownOpen(false)}>
             <i className="bi bi-shield-check"></i> KYC Verification
           </NavLink>
 
-          <NavLink to="/settings" onClick={() => setDropdownOpen(false)}>
-            <i className="bi bi-gear"></i> Settings
-          </NavLink>
+          
 
           <button className="logout-btn" onClick={logout}>
             <i className="bi bi-box-arrow-right"></i> Logout
