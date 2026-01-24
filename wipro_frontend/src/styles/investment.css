@@ -509,7 +509,7 @@ height: 0pc;
   }
 
   .investment-section {
-    display: grid;
+    display: contents;
     width: 0px;
   }
 
@@ -518,6 +518,7 @@ height: 0pc;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    width: -webkit-fill-available;
   }
 
   .investment-section {
@@ -528,6 +529,6 @@ height: 0pc;
 
 @media (max-width: 1024px) {
   .investment-section {
-    display: grid;
+    display: contents;
   }
 }

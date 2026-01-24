@@ -1,12 +1,12 @@
 // Get environment variables
-//const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-//const AUTH_PREFIX = import.meta.env.VITE_AUTH_ENDPOINTS_PREFIX || "/auth";
-//const TOKEN_REFRESH_ENDPOINT = import.meta.env.VITE_TOKEN_REFRESH_ENDPOINT || "/auth/token/refresh/";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const AUTH_PREFIX = import.meta.env.VITE_AUTH_ENDPOINTS_PREFIX || "/auth";
+const TOKEN_REFRESH_ENDPOINT = import.meta.env.VITE_TOKEN_REFRESH_ENDPOINT || "/auth/token/refresh/";
 
 
- const API_BASE_URL = "https://wiproadmin.onrender.com/api";
- const AUTH_PREFIX = "/auth";
- const TOKEN_REFRESH_ENDPOINT ="/auth/token/refresh/";
+ //const API_BASE_URL = "https://wiproadmin.onrender.com/api";
+ //const AUTH_PREFIX = "/auth";
+ //const TOKEN_REFRESH_ENDPOINT ="/auth/token/refresh/";
 
 
 
@@ -34,30 +34,18 @@ const fetchWithAuth = async (url, options = {}) => {
     if (response.status === 401 && !url.includes(TOKEN_REFRESH_ENDPOINT)) {
       const refreshToken = localStorage.getItem('refresh_token');
 
-      if (refreshToken) {
-        try {
-          const refreshResponse = await fetch(`${API_BASE_URL}${TOKEN_REFRESH_ENDPOINT}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ refresh: refreshToken }),
-          });
+      if (refreshResponse.ok) {
+  const refreshData = await refreshResponse.json();
 
-          if (refreshResponse.ok) {
-            const refreshData = await refreshResponse.json();
-            localStorage.setItem('access_token', refreshData.access);
+  localStorage.setItem('access_token', refreshData.access);
 
-            // Retry original request with new token
-            config.headers.Authorization = `Bearer ${refreshData.access}`;
-            response = await fetch(`${API_BASE_URL}${url}`, config);
-          } else {
-            await logoutUser();
-          }
-        } catch (refreshError) {
-          await logoutUser();
-        }
-      } else {
+  if (refreshData.refresh) {
+    localStorage.setItem('refresh_token', refreshData.refresh);
+  }
+
+  config.headers.Authorization = `Bearer ${refreshData.access}`;
+  response = await fetch(`${API_BASE_URL}${url}`, config);
+} else {
         await logoutUser();
       }
     }
@@ -83,28 +71,27 @@ const fetchWithAuth = async (url, options = {}) => {
 // Logout helper
 const logoutUser = async () => {
   const refreshToken = localStorage.getItem('refresh_token');
+
   if (refreshToken) {
     try {
       await fetch(`${API_BASE_URL}${AUTH_PREFIX}/logout/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
-        body: JSON.stringify({ refresh: refreshToken })
+        body: JSON.stringify({ refresh: refreshToken }),
       });
     } catch (err) {
-      console.warn('Failed to send logout request to server:', err);
+      console.warn('Logout request failed');
     }
   }
 
-  localStorage.setItem("access_token", refreshData.access);
-  
-if (refreshData.refresh) {
-  localStorage.setItem("refresh_token", refreshData.refresh);
-}
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
   window.location.href = '/login';
 };
+
 
 // API helper functions
 const apiRequest = {
@@ -249,29 +236,27 @@ export const authAPI = {
    * @returns {Promise<Object>} Success confirmation
    */
   logout: async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (refreshToken) {
-      try {
-        await fetch(`${API_BASE_URL}${AUTH_PREFIX}/logout/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-          },
-          body: JSON.stringify({ refresh: refreshToken })
-        });
-      } catch (err) {
-        console.warn('Logout request failed, continuing anyway');
-      }
-    }
+  const refreshToken = localStorage.getItem('refresh_token');
 
-    localStorage.setItem("access_token", refreshData.access);
-    
-if (refreshData.refresh) {
-  localStorage.setItem("refresh_token", refreshData.refresh);
-}
-    window.location.href = '/login';
-  },
+  if (refreshToken) {
+    try {
+      await fetch(`${API_BASE_URL}${AUTH_PREFIX}/logout/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      });
+    } catch (err) {
+      console.warn('Logout request failed');
+    }
+  }
+
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  window.location.href = '/login';
+},
 
   /**
    * Retrieve current user profile
