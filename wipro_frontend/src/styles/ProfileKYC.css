@@ -148,7 +148,7 @@
 }
 
 /* SUBMIT */
-.submit-btn {
+.submit {
   width: 100%;
   margin-top: 45px;
   padding: 18px;
@@ -310,4 +310,16 @@
 
 .status-btn:hover {
   opacity: 0.9;
+}
+
+
+
+@media (max-width: 480px) {
+    .step-row {
+        display: block;
+    }
+
+    .kyc-card {
+      width: -webkit-fill-available;
+    }
 }
