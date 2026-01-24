@@ -160,7 +160,7 @@ SIMPLE_JWT = {
 # CORS configuration (for frontend integration)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://wiproprojectfull.vercel.app",
+    "https://wipogroup.in",
 ]
 
 
@@ -168,7 +168,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://wiproprojectfull.vercel.app",
+    "https://wipogroup.in",
 ]
 
 
