@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { container, item } from "../api/animations"
 import InvestmentCalculator from "../components/InvestmentCalculator";
 
+
 function Stat({ value, suffix = "", label, duration = 5000 }) {
   const [count, setCount] = useState(0);
 
@@ -93,6 +94,11 @@ export default function Home() {
   return (
     <div className="home-page">
       {/* HERO SECTION */}
+
+
+      
+
+
  <section className="hero">
 
        {/* LEFT BOX – +24.8% */}
