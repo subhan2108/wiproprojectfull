@@ -47,8 +47,6 @@ import EditPropertyPage from "./pages/EditPropertyPage";
 import PropertyRequestForm from "./pages/PropertyRequestForm";
 import MyPropertyRequests from "./pages/MyPropertyRequests";
 import CommitteeWithdraw from "./pages/CommitteeWithdraw";
-import Footer from "./components/Footer";
-
 
 
 
@@ -175,7 +173,7 @@ export const router = createBrowserRouter([
   },
 
   {
-    path: "/profile-kyc",
+    path: "/prifile-kyc",
     element: (
       <Protected>
         <ProfileKYC />

@@ -54,7 +54,7 @@ INSTALLED_APPS = [
    
     
     # Local apps (we'll create these)
-    'accounts.apps.AccountsConfig',
+    'accounts',
     'django_filters',  # Add this
     'properties',  # Add this
     'wallet',
@@ -160,7 +160,7 @@ SIMPLE_JWT = {
 # CORS configuration (for frontend integration)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://wipogroup.in",
+    "https://wiproprojectfull.vercel.app",
 ]
 
 
@@ -168,7 +168,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://wipogroup.in",
+    "https://wiproprojectfull.vercel.app",
 ]
 
 

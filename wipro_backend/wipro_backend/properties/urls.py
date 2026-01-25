@@ -26,7 +26,7 @@ path("plans/<uuid:plan_id>/invite-user/", SendGroupPaymentInviteView.as_view()),
 
 
 
-    
+    path('<uuid:pk>/', views.PropertyDetailView.as_view(), name='property-detail'),
     path('my-properties/', views.MyPropertiesView.as_view(), name='my-properties'),
     
     # Property Images
@@ -120,31 +120,6 @@ path(
     name="group-invites"
 ),
 
-
-# 🔥 DELETE PROPERTY
-path(
-    "<uuid:property_id>/delete/",
-    DeletePropertyView.as_view(),
-    name="delete-property"
-),
-
-
-path('<uuid:pk>/', views.PropertyDetailView.as_view(), name='property-detail'),
-
-
-
-# 🔹 PROPERTY LISTING REQUEST
-path(
-    "<uuid:property_id>/request-listing/",
-    CreatePropertyListingRequestView.as_view(),
-    name="request-property-listing"
-),
-
-path(
-    "listing-requests/my/",
-    MyListingRequestsView.as_view(),
-    name="my-listing-requests"
-),
 
 
 ]

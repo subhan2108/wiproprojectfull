@@ -19,5 +19,4 @@ urlpatterns = [
     path("referral-leaderboard/", referral_leaderboard, name="referral-leaderboard"),
     path("profile-details/", ProfileView.as_view(), name="profile-details"),
 
-
 ]

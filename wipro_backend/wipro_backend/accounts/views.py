@@ -219,11 +219,13 @@ def referral_leaderboard(request):
 
 
 
+
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import UserProfile
 from .serializers import ProfileSerializer
+
 
 class ProfileView(RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer

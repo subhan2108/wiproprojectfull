@@ -2,13 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { apiFetch } from "../api/api";
 
-import { useCurrency } from "../context/CurrencyContext";
-import { formatPrice } from "../utils/currency";
-
 export default function PaymentHistory() {
   const { userCommitteeId } = useParams();
-  const { currency } = useCurrency();
-
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,7 +36,7 @@ export default function PaymentHistory() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <strong>{formatPrice(p.amount, currency)}</strong>
+            <strong>₹{p.amount}</strong>
             <StatusBadge status={p.status} />
           </div>
 
