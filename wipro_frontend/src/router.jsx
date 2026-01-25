@@ -173,7 +173,7 @@ export const router = createBrowserRouter([
   },
 
   {
-    path: "/prifile-kyc",
+    path: "/profile-kyc",
     element: (
       <Protected>
         <ProfileKYC />

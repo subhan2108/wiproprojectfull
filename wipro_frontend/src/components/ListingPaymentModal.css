@@ -49,3 +49,21 @@
   border-radius: 6px;
   cursor: pointer;
 }
+
+
+.listing-info-box {
+  margin: 14px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff7e6;
+  border: 1px solid #f5c26b;
+}
+
+.listing-info-box p {
+  margin: 4px 0;
+}
+
+.listing-info-box .muted {
+  font-size: 13px;
+  opacity: 0.8;
+}

@@ -1,20 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiFetch } from "../api/api";
 import "./create-property.css";
 import { useNavigate } from "react-router-dom";
 import MiniVerticalNav from "../components/MiniVerticalNav";
-import ListingPaymentModal from "../components/ListingPaymentModal";
 
 export default function CreateProperty() {
+  const navigate = useNavigate();
+
+  // 🔐 Listing gate
+  const [listingStatus, setListingStatus] = useState("loading");
+  const [checking, setChecking] = useState(true);
+
+  // ---------- PROPERTY FORM STATE ----------
   const [loading, setLoading] = useState(false);
   const [propertyId, setPropertyId] = useState(null);
   const [images, setImages] = useState([]);
-
-  // 🔥 Listing payment popup state
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentLoading, setPaymentLoading] = useState(false);
-
-  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     title: "",
@@ -33,32 +33,52 @@ export default function CreateProperty() {
     bathrooms: 0,
     floors: 1,
     parking_spaces: 0,
-    furnished: false,
-    ac_available: false,
-    balcony: false,
-    gym: false,
-    swimming_pool: false,
-    garden: false,
-    security: false,
-    lift_available: false,
-    power_backup: false,
     contact_name: "",
     contact_phone: "",
     contact_email: "",
-    investment_enabled: true,
-    investors_required: 10,
-    investors_min: 10,
-    investors_max: 50,
   });
 
-  /* ---------------- HELPERS ---------------- */
+  /* ================= CHECK LISTING STATUS ================= */
+
+  useEffect(() => {
+    apiFetch("/listing-requests/my/")
+      .then((data) => {
+        if (!data || data.length === 0) {
+          setListingStatus("none");
+        } else {
+          setListingStatus(data[0].status); // payment_pending | approved | rejected
+        }
+      })
+      .catch(() => setListingStatus("none"))
+      .finally(() => setChecking(false));
+  }, []);
+
+  /* ================= CREATE LISTING REQUEST ================= */
+
+  const createListingRequestAndPay = async () => {
+    try {
+      const res = await apiFetch(
+        "/listing-requests/create/",
+        { method: "POST" }
+      );
+
+      navigate("/pay", {
+        state: {
+          purpose: "property_listing",
+          amount: 1000,
+          request_id: res.id,
+        },
+      });
+    } catch (err) {
+      alert(err?.error || err?.detail || "Failed to create listing request");
+    }
+  };
+
+  /* ================= FORM HELPERS ================= */
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm({
-      ...form,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
   };
 
   const handleImagesChange = (e) => {
@@ -88,20 +108,15 @@ export default function CreateProperty() {
     area_sqft: Number(form.area_sqft),
     bedrooms: Number(form.bedrooms),
     bathrooms: Number(form.bathrooms),
-    floors: Number(form.floors),
-    parking_spaces: Number(form.parking_spaces),
-    investors_required: Number(form.investors_required),
-    investors_min: Number(form.investors_min),
-    investors_max: Number(form.investors_max),
   });
 
-  /* ---------------- SUBMIT PROPERTY ---------------- */
+  /* ================= SUBMIT PROPERTY ================= */
 
   const submitProperty = async (e) => {
     e.preventDefault();
 
     if (!isFormValid()) {
-      alert("Please fill all required fields correctly");
+      alert("Fill all required fields");
       return;
     }
 
@@ -113,43 +128,20 @@ export default function CreateProperty() {
         body: JSON.stringify(buildPayload()),
       });
 
-      // 🔥 Save property ID & open payment popup
       setPropertyId(res.id);
-      setShowPaymentModal(true);
+      alert("Property created successfully");
+      navigate("/my-properties");
     } catch (err) {
-      alert(err?.detail || JSON.stringify(err));
+      alert(err?.detail || "Failed to create property");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ---------------- LISTING PAYMENT ---------------- */
-
-  const handleListingPayment = async () => {
-    setPaymentLoading(true);
-
-    try {
-      const res = await apiFetch(
-        `/properties/${propertyId}/request-listing/`,
-        { method: "POST" }
-      );
-
-      alert(res.message || "Listing request created");
-      setShowPaymentModal(false);
-    } catch (err) {
-      alert(err?.error || err?.detail || "Payment failed");
-    } finally {
-      setPaymentLoading(false);
-    }
-  };
-
-  /* ---------------- IMAGE UPLOAD ---------------- */
+  /* ================= IMAGE UPLOAD ================= */
 
   const uploadImages = async () => {
-    if (!propertyId || images.length === 0) {
-      alert("Select images first");
-      return;
-    }
+    if (!propertyId || images.length === 0) return;
 
     const formData = new FormData();
     images.forEach((img) => formData.append("images", img));
@@ -160,14 +152,15 @@ export default function CreateProperty() {
         body: formData,
       });
 
-      alert("Images uploaded successfully");
       navigate("/my-properties");
-    } catch (err) {
+    } catch {
       alert("Image upload failed");
     }
   };
 
-  /* ---------------- UI ---------------- */
+  /* ================= UI ================= */
+
+  if (checking) return <p>Checking permission…</p>;
 
   return (
     <div className="create-property">
@@ -177,63 +170,60 @@ export default function CreateProperty() {
         <MiniVerticalNav />
       </div>
 
-      <form onSubmit={submitProperty}>
-        <input name="title" placeholder="Title" onChange={handleChange} required />
-        <textarea name="description" placeholder="Description" onChange={handleChange} />
-
-        <select name="property_type" onChange={handleChange}>
-          <option value="residential">Residential</option>
-          <option value="commercial">Commercial</option>
-          <option value="apartment">Apartment</option>
-          <option value="villa">Villa</option>
-        </select>
-
-        <select name="listing_type" onChange={handleChange}>
-          <option value="sale">For Sale</option>
-          <option value="rent">For Rent</option>
-          <option value="both">Sale & Rent</option>
-        </select>
-
-        <input name="price" type="number" placeholder="Price" required onChange={handleChange} />
-        <input name="rent_price" type="number" placeholder="Rent Price (optional)" onChange={handleChange} />
-
-        <input name="location" placeholder="Location" required onChange={handleChange} />
-        <input name="address" placeholder="Full Address" required onChange={handleChange} />
-        <input name="city" placeholder="City" required onChange={handleChange} />
-        <input name="state" placeholder="State" required onChange={handleChange} />
-        <input name="pincode" placeholder="Pincode" required onChange={handleChange} />
-
-        <input name="area_sqft" type="number" placeholder="Area (sqft)" required onChange={handleChange} />
-        <input name="bedrooms" type="number" placeholder="Bedrooms" onChange={handleChange} />
-        <input name="bathrooms" type="number" placeholder="Bathrooms" onChange={handleChange} />
-
-        <h4>Contact</h4>
-        <input name="contact_name" placeholder="Contact Name" required onChange={handleChange} />
-        <input name="contact_phone" placeholder="Contact Phone" required onChange={handleChange} />
-        <input name="contact_email" type="email" placeholder="Contact Email" required onChange={handleChange} />
-
-        <button disabled={loading}>
-          {loading ? "Creating..." : "Create Property"}
+      {/* 🟢 NO REQUEST */}
+      {listingStatus === "none" && (
+        <button className="btn-pay" onClick={createListingRequestAndPay}>
+          Pay ₹1000 to Create Property
         </button>
-      </form>
-
-      {propertyId && (
-        <>
-          <h4>Upload Images</h4>
-          <input type="file" multiple accept="image/*" onChange={handleImagesChange} />
-          <button type="button" onClick={uploadImages}>
-            Upload Images
-          </button>
-        </>
       )}
 
-      {/* 🔥 LISTING PAYMENT POPUP */}
-      <ListingPaymentModal
-        open={showPaymentModal}
-        loading={paymentLoading}
-        onClose={() => setShowPaymentModal(false)}
-        onConfirm={handleListingPayment}
-      />
+      {/* 🟡 PENDING */}
+      {listingStatus === "payment_pending" && (
+        <button className="btn-pending" disabled>
+          Listing Request Pending
+        </button>
+      )}
+
+      {/* 🔴 REJECTED */}
+      {listingStatus === "rejected" && (
+        <button className="btn-pay" onClick={createListingRequestAndPay}>
+          Request Rejected – Pay Again
+        </button>
+      )}
+
+      {/* ✅ APPROVED → SHOW FORM */}
+      {listingStatus === "approved" && (
+        <>
+          <form onSubmit={submitProperty}>
+            <input name="title" placeholder="Title" onChange={handleChange} />
+            <textarea name="description" placeholder="Description" onChange={handleChange} />
+
+            <input name="price" type="number" placeholder="Price" onChange={handleChange} />
+            <input name="area_sqft" type="number" placeholder="Area (sqft)" onChange={handleChange} />
+
+            <input name="location" placeholder="Location" onChange={handleChange} />
+            <input name="address" placeholder="Address" onChange={handleChange} />
+            <input name="city" placeholder="City" onChange={handleChange} />
+            <input name="state" placeholder="State" onChange={handleChange} />
+            <input name="pincode" placeholder="Pincode" onChange={handleChange} />
+
+            <input name="contact_name" placeholder="Contact Name" onChange={handleChange} />
+            <input name="contact_phone" placeholder="Phone" onChange={handleChange} />
+            <input name="contact_email" placeholder="Email" onChange={handleChange} />
+
+            <button disabled={loading}>
+              {loading ? "Creating…" : "Create Property"}
+            </button>
+          </form>
+
+          {propertyId && (
+            <>
+              <input type="file" multiple onChange={handleImagesChange} />
+              <button onClick={uploadImages}>Upload Images</button>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }

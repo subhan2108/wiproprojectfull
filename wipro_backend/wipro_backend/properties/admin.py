@@ -320,3 +320,110 @@ class PropertyRequestAdmin(admin.ModelAdmin):
     property_owner.short_description = "Owner"
     property_owner_display.short_description = "Property Owner"
     group_size_display.short_description = "Group Size"
+
+
+
+
+
+
+
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import PropertyListingRequest
+
+
+@admin.register(PropertyListingRequest)
+class PropertyListingRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        "property_title",
+        "property_owner",
+        "listing_fee",
+        "payment_status",
+        "status",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
+        "is_paid",
+        "created_at",
+    )
+
+    search_fields = (
+        "property__title",
+        "user__username",
+        "user__email",
+    )
+
+    readonly_fields = (
+        "property",
+        "user",
+        "listing_fee",
+        "created_at",
+        "paid_at",
+    )
+
+    fieldsets = (
+        ("Property Info", {
+            "fields": (
+                "property",
+                "user",
+            )
+        }),
+        ("Payment Info", {
+            "fields": (
+                "listing_fee",
+                "is_paid",
+                "paid_at",
+            )
+        }),
+        ("Admin Decision", {
+            "fields": (
+                "status",
+            )
+        }),
+        ("System", {
+            "fields": (
+                "created_at",
+            )
+        }),
+    )
+
+    actions = ["approve_listing", "reject_listing"]
+
+    # 🔹 DISPLAY HELPERS
+
+    def property_title(self, obj):
+        return obj.property.title
+
+    def property_owner(self, obj):
+        return obj.user.username
+
+    def payment_status(self, obj):
+        if obj.is_paid:
+            return format_html('<span style="color: green;">PAID</span>')
+        return format_html('<span style="color: red;">UNPAID</span>')
+
+    property_title.short_description = "Property"
+    property_owner.short_description = "Owner"
+    payment_status.short_description = "Payment"
+
+    # 🔹 ADMIN ACTIONS
+
+    @admin.action(description="Approve selected listings")
+    def approve_listing(self, request, queryset):
+        for req in queryset:
+            if not req.is_paid:
+                continue  # ❌ cannot approve unpaid
+
+            req.status = "approved"
+            req.save(update_fields=["status"])
+
+            # 🔥 ensure property is verified
+            prop = req.property
+            prop.is_verified = True
+            prop.save(update_fields=["is_verified"])
+
+    @admin.action(description="Reject selected listings")
+    def reject_listing(self, request, queryset):
+        queryset.update(status="rejected")

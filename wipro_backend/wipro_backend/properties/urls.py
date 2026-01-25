@@ -269,5 +269,10 @@ path(
     name="my-listing-requests"
 ),
 
+path(
+    "listing-requests/<uuid:request_id>/pay/",
+    ListingPaymentView.as_view(),
+    name="listing-payment"
+),
 
 ]

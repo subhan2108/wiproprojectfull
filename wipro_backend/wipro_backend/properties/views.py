@@ -1469,18 +1469,15 @@ class CreatePropertyListingRequestView(APIView):
     def post(self, request, property_id):
         prop = get_object_or_404(Property, id=property_id)
 
-        # 🔐 only owner can request listing
         if prop.owner != request.user:
             raise PermissionDenied("Only owner can request listing")
 
-        # ❌ already listed
         if prop.is_verified:
             return Response(
-                {"error": "Property is already listed"},
+                {"error": "Property already listed"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # ❌ duplicate request
         if hasattr(prop, "listing_request"):
             return Response(
                 {"error": "Listing request already exists"},
@@ -1496,10 +1493,11 @@ class CreatePropertyListingRequestView(APIView):
 
         return Response(
             {
-                "message": "Listing request created. Please pay ₹1000 to continue.",
                 "request_id": str(req.id),
-                "listing_fee": req.listing_fee,
+                "listing_fee": str(req.listing_fee),
+                "currency": "INR",
                 "status": req.status,
+                "message": "Listing payment required"
             },
             status=status.HTTP_201_CREATED
         )
@@ -1526,3 +1524,60 @@ class MyListingRequestsView(APIView):
         ]
 
         return Response(data)
+    
+
+
+
+from django.utils import timezone
+from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from django.db import transaction as db_tx
+
+class ListingPaymentView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    @db_tx.atomic
+    def post(self, request, request_id):
+        listing = get_object_or_404(PropertyListingRequest, id=request_id)
+
+        if listing.user != request.user:
+            return Response({"error": "Not allowed"}, status=403)
+
+        if listing.is_paid:
+            return Response({"error": "Already paid"}, status=400)
+
+        # 🔹 Simulated payment (replace with Razorpay later)
+        amount = listing.listing_fee
+
+        tx = Transaction.objects.create(
+            provider="fake",
+            status="success",
+            amount=amount,
+            payer_name=request.user.username,
+            payer_phone="N/A",
+            note="Property listing fee"
+        )
+
+        # ✅ Mark listing as paid
+        listing.is_paid = True
+        listing.status = "paid"
+        listing.paid_at = timezone.now()
+        listing.save()
+
+        # ✅ Verify & list property
+        prop = listing.property
+        prop.is_verified = True
+        prop.save(update_fields=["is_verified"])
+
+        return Response(
+            {
+                "message": "Listing payment successful",
+                "transaction_id": str(tx.id),
+                "property_id": str(prop.id),
+                "property_listed": True
+            },
+            status=status.HTTP_200_OK
+        )

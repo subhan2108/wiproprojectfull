@@ -23,6 +23,13 @@ export default function KYC() {
 
   aadhar_front_photo: null,
   pan_card_photo: null,
+
+  // 💳 Payment methods
+    upi_id: "",
+    bank_name: "",
+    bank_account_number: "",
+    bank_ifsc_code: "",
+    usdt_address: "",
   });
 
   const [status, setStatus] = useState("form"); 
@@ -191,187 +198,69 @@ if (["pending", "approved", "rejected"].includes(status)) {
   // 🧾 FORM UI
   return (
     <div className="kyc-page">
-  <div className="kyc-card">
+      <div className="kyc-card">
+        <h1>
+          Complete your <span>KYC</span>
+        </h1>
 
-    <div className="badge-wrap">
-      <span className="secure-badge">SECURE VERIFICATION</span>
-    </div>
+        {alert && <div className="form-alert error">{alert}</div>}
 
-    <h1>Complete your <span>KYC</span></h1>
-    <p className="sub-text">
-      Please provide your details to unlock full account features.
-    </p>
+        <Section title="Basic Information" icon="bi-person">
+          <Input name="email" placeholder="Email" onChange={handleChange} />
+          <Input name="phone_number"  placeholder="Phone number" onChange={handleChange} />
+        </Section>
 
-    {/* GLOBAL ALERT */}
-    {alert && <div className="form-alert error">{alert}</div>}
+        <Section title="Indian KYC (Optional)" icon="bi-person-vcard">
+          <Input name="aadhar_number" placeholder="Aadhaar Number" onChange={handleChange} />
+          <File name="aadhar_front_photo" label="Aadhaar Front Photo" onChange={handleChange} />
+          <Input name="pan_number" placeholder="PAN Number" onChange={handleChange} />
+          <File name="pan_card_photo" label="PAN Card Photo" onChange={handleChange} />
+        </Section>
 
-    {/* EMAIL */}
-    <div className="step-row">
-      <div className="step-number">1</div>
-      <div className="step-content">
-        <p className="step-title">EMAIL AUTHENTICATION</p>
-        <div className="input-wrap">
-          <input
-            type="email"
-            name="email"
-            placeholder="yourname@email.com"
-            onChange={handleChange}
-            className={errors.email ? "input-error" : ""}
-          />
-        </div>
-        {errors.email && (
-          <small className="error-text">{errors.email}</small>
-        )}
+        <Section title="Foreign KYC (Optional)" icon="bi-globe">
+          <Input name="passport_number" placeholder="Passport Number" onChange={handleChange} />
+          <File name="passport_photo" label="Passport Photo" onChange={handleChange} />
+          <Input name="international_id_number" placeholder="International ID Number" onChange={handleChange} />
+          <File name="international_id_photo" label="International ID Photo" onChange={handleChange} />
+        </Section>
+
+        <Section title="Payment / Withdrawal Details" icon="bi-wallet2">
+          <Input name="upi_id" placeholder="UPI ID" onChange={handleChange} />
+          <Input name="bank_name" placeholder="Bank Name" onChange={handleChange} />
+          <Input name="bank_account_number" placeholder="Account Number" onChange={handleChange} />
+          <Input name="bank_ifsc_code" placeholder="IFSC Code" onChange={handleChange} />
+          <Input name="usdt_address" placeholder="USDT Address" onChange={handleChange} />
+        </Section>
+
+        <button className="submit" onClick={submitKYC} disabled={loading}>
+          {loading ? "Submitting..." : "Submit KYC"}
+        </button>
       </div>
     </div>
-
-    {/* PHONE */}
-    <div className="step-row">
-      <div className="step-number">2</div>
-      <div className="step-content">
-        <p className="step-title">PHONE VERIFICATION</p>
-        <div className="input-wrap">
-          <input
-            type="text"
-            name="phone_number"
-            placeholder="+91 00000 00000"
-            onChange={handleChange}
-            className={errors.phone_number ? "input-error" : ""}
-          />
-        </div>
-        {errors.phone_number && (
-          <small className="error-text">{errors.phone_number}</small>
-        )}
-        <small className="helper-text">
-          International numbers supported (e.g. +14155552671)
-        </small>
-      </div>
-    </div>
-
-    {/* DOCUMENTS */}
-    <div className="doc-row">
-
-      {/* AADHAAR */}
-      <div className="doc-box">
-        <p className="doc-title">AADHAR CARD</p>
-        <input
-          type="text"
-          name="aadhar_number"
-          placeholder="12 Digit Number"
-          onChange={handleChange}
-          className={errors.aadhar_number ? "input-error" : ""}
-        />
-        {errors.aadhar_number && (
-          <small className="error-text">{errors.aadhar_number}</small>
-        )}
-        <small className="helper-text">
-          Indian users only (optional for foreign users)
-        </small>
-
-        <div className="upload-box">
-          <span>☁️</span>
-          <p>FRONT SIDE PHOTO</p>
-          <input
-            type="file"
-            name="aadhar_front_photo"
-            onChange={handleChange}
-          />
-        </div>
-      </div>
-
-      {/* PAN */}
-      <div className="doc-box">
-        <p className="doc-title">PAN CARD</p>
-        <input
-          type="text"
-          name="pan_number"
-          placeholder="PAN NUMBER"
-          onChange={handleChange}
-          className={errors.pan_number ? "input-error" : ""}
-        />
-        {errors.pan_number && (
-          <small className="error-text">{errors.pan_number}</small>
-        )}
-        <small className="helper-text">
-          Format: ABCDE1234F (optional for non-Indian users)
-        </small>
-
-        <div className="upload-box">
-          <span>☁️</span>
-          <p>PAN CARD PHOTO</p>
-          <input
-            type="file"
-            name="pan_card_photo"
-            onChange={handleChange}
-          />
-        </div>
-      </div>
-      <div className="doc-box">
-  <p className="doc-title">
-    PASSPORT <span className="optional">(Optional – Foreign Clients)</span>
-  </p>
-
-  <input
-    type="text"
-    name="passport_number"
-    value={form.passport_number}
-    onChange={handleChange}
-    placeholder="Passport Number"
-  />
-
-  <div className="upload-box">
-    <span>☁️</span>
-    <p>PASSPORT PHOTO</p>
-    <input
-      type="file"
-      name="passport_photo"
-      onChange={handleChange}
-    />
-  </div>
-</div>
-
-
-<div className="doc-box">
-  <p className="doc-title">
-    INTERNATIONAL ID <span className="optional">(Optional)</span>
-  </p>
-
-  <input
-    type="text"
-    name="international_id_number"
-    value={form.international_id_number}
-    onChange={handleChange}
-    placeholder="International ID Number"
-  />
-
-  <div className="upload-box">
-    <span>☁️</span>
-    <p>ID CARD PHOTO</p>
-    <input
-      type="file"
-      name="international_id_photo"
-      onChange={handleChange}
-    />
-  </div>
-</div>
-
-
-    </div>
-
-    <button
-      className="submit"
-      onClick={submitKYC}
-      disabled={loading}
-    >
-      {loading ? "Submitting..." : "COMPLETE KYC PROCESS"}
-    </button>
-
-    <p className="footer-note">
-      🔒 End-to-end encrypted verification
-    </p>
-
-  </div>
-</div>
-
   );
 }
+
+/* 🔹 Small helpers */
+const Section = ({ title, icon, children }) => (
+  <div className="kyc-section">
+    <h3>
+      <i className={`bi ${icon}`} /> {title}
+    </h3>
+    {children}
+  </div>
+);
+
+const Input = ({ name, placeholder, icon, onChange }) => (
+  <div className="input-wrap">
+    {icon && <i className={`bi ${icon}`} />}
+    <input name={name} placeholder={placeholder} onChange={onChange} />
+  </div>
+);
+
+const File = ({ name, label, onChange }) => (
+  <div className="upload-box">
+    <label>{label}</label>
+    <input type="file" name={name} onChange={onChange} />
+  </div>
+
+  );

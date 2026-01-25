@@ -3,6 +3,7 @@ from django.db import models
 # Create your models here.
 from django.conf import settings
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 User = settings.AUTH_USER_MODEL
 
@@ -28,13 +29,13 @@ class UserVerification(models.Model):
     pan_number = models.CharField(max_length=10)
 
     # 📷 Photo fields
-    aadhar_front_photo = models.ImageField(
-        upload_to="kyc/aadhar/",
+    aadhar_front_photo = CloudinaryField(
+        "aadhar_front",
         blank=True,
         null=True
     )
-    pan_card_photo = models.ImageField(
-        upload_to="kyc/pan/",
+    pan_card_photo = CloudinaryField(
+        "pan_card",
         blank=True,
         null=True
     )
@@ -54,8 +55,8 @@ class UserVerification(models.Model):
         blank=True,
         null=True
     )
-    passport_photo = models.ImageField(
-        upload_to="kyc/passport/",
+    passport_photo = CloudinaryField(
+        "passport",
         blank=True,
         null=True
     )
@@ -65,8 +66,37 @@ class UserVerification(models.Model):
         blank=True,
         null=True
     )
-    international_id_photo = models.ImageField(
-        upload_to="kyc/international/",
+    international_id_photo = CloudinaryField(
+        "international_id",
+        blank=True,
+        null=True
+    )
+
+     # 💳 USER WITHDRAWAL PAYMENT DETAILS (OPTIONAL)
+    upi_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    bank_name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+    bank_account_number = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True
+    )
+    bank_ifsc_code = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    usdt_address = models.CharField(
+        max_length=150,
         blank=True,
         null=True
     )

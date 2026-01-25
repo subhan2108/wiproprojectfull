@@ -112,7 +112,7 @@ export default function Navbar() {
             <i className="bi bi-wallet2"></i> Wallet
           </NavLink>
 
-          <NavLink to="/prifile-kyc" onClick={() => setDropdownOpen(false)}>
+          <NavLink to="/profile-kyc" onClick={() => setDropdownOpen(false)}>
             <i className="bi bi-shield-check"></i> KYC Verification
           </NavLink>
 

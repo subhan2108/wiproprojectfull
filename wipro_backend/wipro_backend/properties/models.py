@@ -498,22 +498,17 @@ class PropertyRequest(models.Model):
 
 class PropertyListingRequest(models.Model):
     STATUS_CHOICES = [
-        ("pending", "Pending"),
         ("payment_pending", "Payment Pending"),
+        ("paid", "Paid"),
         ("approved", "Approved"),
         ("rejected", "Rejected"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="listing_requests"
-    )
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     property = models.OneToOneField(
-        "Property",
+        Property,
         on_delete=models.CASCADE,
         related_name="listing_request"
     )
@@ -527,18 +522,10 @@ class PropertyListingRequest(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default="pending"
+        default="payment_pending"
     )
 
     is_paid = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
-    approved_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        ordering = ["-created_at"]
-        verbose_name = "Property Listing Request"
-        verbose_name_plural = "Property Listing Requests"
-
-    def __str__(self):
-        return f"{self.property.title} → {self.user.username}"
+    paid_at = models.DateTimeField(null=True, blank=True)
