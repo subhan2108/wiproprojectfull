@@ -4,7 +4,7 @@
 //const TOKEN_REFRESH_ENDPOINT = import.meta.env.VITE_TOKEN_REFRESH_ENDPOINT || "/auth/token/refresh/";
 
 
- const API_BASE_URL = "https://wipobackend.onrender.com/";
+ const API_BASE_URL = "https://wipobackend.onrender.com/api";
  const AUTH_PREFIX = "/auth";
  const TOKEN_REFRESH_ENDPOINT ="/auth/token/refresh/";
 
