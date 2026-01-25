@@ -332,22 +332,38 @@ from django.utils import timezone
 from .models import WithdrawalRequest
 
 
+from django.contrib import admin
+from django.utils import timezone
+from .models import WithdrawalRequest
+
+
 @admin.register(WithdrawalRequest)
 class WithdrawalRequestAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "user",
+        "committee_name",   # ✅ ADDED
         "amount",
         "payment_method",
         "status",
         "created_at",
     )
 
-    list_filter = ("status", "payment_method")
-    search_fields = ("user__username", "user__email")
+    list_filter = (
+        "status",
+        "payment_method",
+        "user_committee__committee",  # ✅ FILTER BY COMMITTEE
+    )
+
+    search_fields = (
+        "user__username",
+        "user__email",
+        "user_committee__committee__name",
+    )
 
     readonly_fields = (
         "user",
+        "user_committee",
         "amount",
         "payment_method",
         "created_at",
@@ -356,10 +372,17 @@ class WithdrawalRequestAdmin(admin.ModelAdmin):
 
     actions = ["approve_withdrawal", "reject_withdrawal"]
 
-    # ✅ THIS IS THE CORRECT PLACE
+    # ✅ ONLY withdrawal transactions
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.filter(transaction_type="withdrawal")
+
+    # 🏛 SHOW COMMITTEE NAME
+    def committee_name(self, obj):
+        if obj.user_committee and obj.user_committee.committee:
+            return obj.user_committee.committee.name
+        return "Wallet"
+    committee_name.short_description = "Committee"
 
     def approve_withdrawal(self, request, queryset):
         queryset.filter(status="pending").update(

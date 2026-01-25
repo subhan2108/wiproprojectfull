@@ -13,6 +13,16 @@ export default function KYC() {
     pan_number: "",
     aadhar_front_photo: null,
     pan_card_photo: null,
+
+     // 🌍 foreign client fields (optional)
+  passport_number: "",
+  passport_photo: null,
+
+  international_id_number: "",
+  international_id_photo: null,
+
+  aadhar_front_photo: null,
+  pan_card_photo: null,
   });
 
   const [status, setStatus] = useState("form"); 
@@ -296,6 +306,55 @@ if (["pending", "approved", "rejected"].includes(status)) {
           />
         </div>
       </div>
+      <div className="doc-box">
+  <p className="doc-title">
+    PASSPORT <span className="optional">(Optional – Foreign Clients)</span>
+  </p>
+
+  <input
+    type="text"
+    name="passport_number"
+    value={form.passport_number}
+    onChange={handleChange}
+    placeholder="Passport Number"
+  />
+
+  <div className="upload-box">
+    <span>☁️</span>
+    <p>PASSPORT PHOTO</p>
+    <input
+      type="file"
+      name="passport_photo"
+      onChange={handleChange}
+    />
+  </div>
+</div>
+
+
+<div className="doc-box">
+  <p className="doc-title">
+    INTERNATIONAL ID <span className="optional">(Optional)</span>
+  </p>
+
+  <input
+    type="text"
+    name="international_id_number"
+    value={form.international_id_number}
+    onChange={handleChange}
+    placeholder="International ID Number"
+  />
+
+  <div className="upload-box">
+    <span>☁️</span>
+    <p>ID CARD PHOTO</p>
+    <input
+      type="file"
+      name="international_id_photo"
+      onChange={handleChange}
+    />
+  </div>
+</div>
+
 
     </div>
 

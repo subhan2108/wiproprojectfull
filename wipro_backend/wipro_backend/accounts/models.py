@@ -48,6 +48,29 @@ class UserVerification(models.Model):
         related_name="referred_users"
     )
 
+    # 🌍 FOREIGN CLIENT DOCUMENTS (OPTIONAL)
+    passport_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+    passport_photo = models.ImageField(
+        upload_to="kyc/passport/",
+        blank=True,
+        null=True
+    )
+
+    international_id_number = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True
+    )
+    international_id_photo = models.ImageField(
+        upload_to="kyc/international/",
+        blank=True,
+        null=True
+    )
+
     # ✅ Status dropdown
     status = models.CharField(
         max_length=10,
