@@ -9,9 +9,17 @@ export default function ListingPaymentModal({
   loading,
 }) {
   const navigate = useNavigate();
-  const { formatPrice, currency } = useCurrency();
+  const { currency } = useCurrency(); // ✅ ONLY what exists
 
-  const LISTING_FEE = 1000; // INR base
+  const LISTING_FEE_INR = 1000;
+
+  // ✅ Local conversion (NO context change)
+  const getDisplayPrice = () => {
+    if (currency === "USD") {
+      return `$${(LISTING_FEE_INR / 89).toFixed(2)}`;
+    }
+    return `₹${LISTING_FEE_INR}`;
+  };
 
   if (!open) return null;
 
@@ -19,7 +27,7 @@ export default function ListingPaymentModal({
     navigate("/pay", {
       state: {
         purpose: "property_listing",
-        amount: LISTING_FEE, // 🔥 STILL INR
+        amount: LISTING_FEE_INR, // ✅ ALWAYS INR
         request_type: "deposit",
       },
     });
@@ -32,7 +40,7 @@ export default function ListingPaymentModal({
 
         <p>
           To list your property on the main marketplace, you need to pay a
-          <strong> {formatPrice(LISTING_FEE)} listing fee</strong>.
+          <strong> {getDisplayPrice()} listing fee</strong>.
         </p>
 
         <div className="modal-actions">
@@ -45,9 +53,7 @@ export default function ListingPaymentModal({
             onClick={handlePay}
             disabled={loading}
           >
-            {loading
-              ? "Processing..."
-              : `Pay ${formatPrice(LISTING_FEE)}`}
+            {loading ? "Processing..." : `Pay ${getDisplayPrice()}`}
           </button>
         </div>
 
