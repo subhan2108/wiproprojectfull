@@ -5,6 +5,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from decimal import Decimal
 import uuid
+from cloudinary.models import CloudinaryField
+
 
 
 class Wallet(models.Model):
@@ -201,6 +203,13 @@ class PaymentTransaction(models.Model):
 
     wallet_synced = models.BooleanField(default=False)
 
+    payment_screenshot = CloudinaryField(
+        "payment_screenshot",
+        null=True,
+        blank=True,
+        help_text="User uploaded payment proof"
+    )
+
 
     def __str__(self):
      committee_name = (
@@ -314,13 +323,42 @@ class PaymentRequest(models.Model):
         ("rejected", "Rejected"),
     )
 
+    TYPE_CHOICES = (
+        ("deposit", "Deposit"),
+        ("withdraw", "Withdraw"),
+    )
+
+    # ✅ NEW FIELD
+    request_type = models.CharField(
+        max_length=10,
+        choices=TYPE_CHOICES,
+        help_text="Deposit or Withdraw",
+        null=True,
+        blank=True,
+    )
+
+    # ✅ SCREENSHOT (same as PaymentTransaction)
+    payment_screenshot = CloudinaryField(
+        "payment_screenshot",
+        null=True,
+        blank=True,
+        help_text="User uploaded payment proof"
+    )
+
+     # ✅ THIS IS THE FIELD YOU WANT
+    user_payment_method_details = models.TextField(
+        null=True,
+        blank=True,
+        help_text="User provided UPI / Bank / USDT details for withdrawal"
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
 
-    purpose = models.CharField(
-        max_length=50,
-        help_text="loan emi / wallet topup / investment"
-    )
+    # purpose = models.CharField(
+    #     max_length=50,
+    #     help_text="loan emi / wallet topup / investment"
+    # )
 
     payment_method = models.ForeignKey(
         "PaymentMethod",

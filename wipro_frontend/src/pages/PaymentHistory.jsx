@@ -2,11 +2,49 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "../api/api";
 import { useCurrency } from "../context/CurrencyContext";
 
+function StatusBadge({ status }) {
+
+  const [withdrawalDetails, setWithdrawalDetails] = useState("");
+
+
+  const colors = {
+    pending: "#f59e0b",
+    approved: "#16a34a",
+    rejected: "#dc2626",
+    overdue: "#6b7280",
+  };
+
+  return (
+    <span
+      style={{
+        padding: "4px 10px",
+        borderRadius: 20,
+        fontSize: 12,
+        color: "#fff",
+        background: colors[status] || "#6b7280",
+      }}
+    >
+      {status.toUpperCase()}
+    </span>
+  );
+}
+
 export default function PaymentHistory() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const { formatPrice, currency } = useCurrency();
+  const { currency, rate } = useCurrency(); // 👈 SAFE
+
+  // ✅ SIMPLE LOCAL FORMATTER (NO DEPENDENCY)
+  const formatAmount = (amount) => {
+    const value = Number(amount || 0);
+
+    if (currency === "INR") {
+      return `₹${value.toLocaleString("en-IN")}`;
+    }
+
+    return `${currency} ${(value / rate).toFixed(2)}`;
+  };
 
   useEffect(() => {
     apiFetch("/payment-history/")
@@ -37,18 +75,24 @@ export default function PaymentHistory() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <strong>{formatPrice(p.amount)}</strong>
+            <strong>{formatAmount(p.amount)}</strong>
             <StatusBadge status={p.status} />
           </div>
 
-          <p><b>Method:</b> {p.payment_method || "—"}</p>
-
           <p>
-            <b>Purpose:</b>{" "}
-            {p.purpose.replace("_", " ").toUpperCase()}
+            <b>Method:</b> {p.payment_method || "—"}
           </p>
 
-          <p><b>Date:</b> {p.created_at}</p>
+          <p>
+            <b>Type:</b>{" "}
+            {p.request_type === "deposit"
+              ? "DEPOSIT"
+              : "WITHDRAW"}
+          </p>
+
+          <p>
+            <b>Date:</b> {p.created_at}
+          </p>
 
           {p.admin_message && (
             <p style={{ marginTop: 8 }}>

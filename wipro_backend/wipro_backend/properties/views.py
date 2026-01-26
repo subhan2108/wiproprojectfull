@@ -20,7 +20,12 @@ from wallet.services import credit_wallet
 
 class PropertyListCreateView(generics.ListCreateAPIView):
     """List all properties or create a new property"""
-    queryset = Property.objects.all()
+    # queryset = Property.objects.all()
+    queryset = Property.objects.filter(
+    status="available",
+    is_verified=True
+)
+
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = PropertyFilter
@@ -53,6 +58,12 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_object(self):
         obj = super().get_object()
         # Increment view count if it's a GET request and not the owner
+
+        # 🔒 Draft protection
+        if obj.status == "draft" and self.request.user != obj.owner and not self.request.user.is_staff:
+            raise PermissionDenied("Property is not published yet")
+    
+
         if self.request.method == 'GET' and self.request.user != obj.owner:
             obj.views_count += 1
             obj.save(update_fields=['views_count'])

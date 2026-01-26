@@ -9,6 +9,79 @@ from .models import Property, PropertyImage
 
 
 
+# @admin.register(Property)
+# class PropertyAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "title",
+#         "owner",
+#         "property_type",
+#         "listing_type",
+#         "status",
+#         "price",
+#         "city",
+#         "is_verified",
+#         "created_at",
+#     )
+
+#     list_filter = (
+#         "status",
+#         "property_type",
+#         "listing_type",
+#         "city",
+#     )
+
+#     search_fields = (
+#         "title",
+#         "owner__username",
+#         "owner__email",
+#         "city",
+#         "location",
+#     )
+
+#     ordering = ("-created_at", "is_verified")
+
+#     list_filter = ("status", "is_verified")
+
+#     actions = ["mark_available"]
+
+#     readonly_fields = ("views_count", "created_at", "updated_at")
+
+#     fieldsets = (
+#         ("Basic Info", {
+#             "fields": ("title", "description", "owner")
+#         }),
+#         ("Property Details", {
+#             "fields": (
+#                 "property_type",
+#                 "listing_type",
+#                 "status",
+#                 "price",
+#                 "rent_price",
+#                 "area_sqft",
+#                 "bedrooms",
+#                 "bathrooms",
+#             )
+#         }),
+#         ("Location", {
+#             "fields": ("location", "address", "city", "state", "pincode")
+#         }),
+#         ("Stats", {
+#             "fields": ("views_count", "created_at", "updated_at")
+#         }),
+
+#     @admin.action(description="Mark selected properties as AVAILABLE")
+#         def mark_available(self, request, queryset):
+#         queryset.filter(
+#             status="draft",
+#             is_verified=True
+#         ).update(status="available")
+#     )
+
+
+from django.contrib import admin
+from .models import Property
+
+
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
     list_display = (
@@ -19,11 +92,13 @@ class PropertyAdmin(admin.ModelAdmin):
         "status",
         "price",
         "city",
+        "is_verified",
         "created_at",
     )
 
     list_filter = (
         "status",
+        "is_verified",
         "property_type",
         "listing_type",
         "city",
@@ -39,11 +114,21 @@ class PropertyAdmin(admin.ModelAdmin):
 
     ordering = ("-created_at",)
 
-    readonly_fields = ("views_count", "created_at", "updated_at")
+    readonly_fields = (
+        "views_count",
+        "created_at",
+        "updated_at",
+    )
+
+    actions = ["mark_available"]
 
     fieldsets = (
         ("Basic Info", {
-            "fields": ("title", "description", "owner")
+            "fields": (
+                "title",
+                "description",
+                "owner",
+            )
         }),
         ("Property Details", {
             "fields": (
@@ -58,12 +143,31 @@ class PropertyAdmin(admin.ModelAdmin):
             )
         }),
         ("Location", {
-            "fields": ("location", "address", "city", "state", "pincode")
+            "fields": (
+                "location",
+                "address",
+                "city",
+                "state",
+                "pincode",
+            )
         }),
-        ("Stats", {
-            "fields": ("views_count", "created_at", "updated_at")
+        ("Verification & Stats", {
+            "fields": (
+                "is_verified",
+                "views_count",
+                "created_at",
+                "updated_at",
+            )
         }),
     )
+
+    # 🔥 ADMIN ACTION
+    @admin.action(description="Mark selected properties as AVAILABLE")
+    def mark_available(self, request, queryset):
+        queryset.filter(
+            status="draft",
+            is_verified=True
+        ).update(status="available")
 
 
 

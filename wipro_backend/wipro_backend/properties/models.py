@@ -29,6 +29,7 @@ class Property(models.Model):
     ]
     
     PROPERTY_STATUS = [
+        ('draft', 'Draft'),          # 🆕
         ('available', 'Available'),
         ('sold', 'Sold'),
         ('rented', 'Rented'),
@@ -48,7 +49,7 @@ class Property(models.Model):
     description = models.TextField()
     property_type = models.CharField(max_length=20, choices=PROPERTY_TYPES)
     listing_type = models.CharField(max_length=10, choices=LISTING_TYPE, default='sale')
-    status = models.CharField(max_length=20, choices=PROPERTY_STATUS, default='available')
+    status = models.CharField(max_length=20, choices=PROPERTY_STATUS, default='draft')
     
     # Location
     location = models.CharField(max_length=300)

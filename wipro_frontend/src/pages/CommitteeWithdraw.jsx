@@ -10,35 +10,61 @@ export default function CommitteeWithdraw() {
   const [amount, setAmount] = useState("");
   const [methodId, setMethodId] = useState("");
   const [details, setDetails] = useState("");
+  const [screenshot, setScreenshot] = useState(null);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
+  // 🔒 STATIC PAYMENT METHODS (UI CONTROLLED)
+  const STATIC_METHODS = [
+    { type: "upi", label: "UPI" },
+    { type: "bank", label: "Bank Transfer" },
+    { type: "usdt", label: "USDT" },
+  ];
+
+  // 🔄 FETCH BACKEND METHODS (ONLY FOR ID MAPPING)
   useEffect(() => {
     apiFetch("/payment-methods/?for_withdrawal=true")
-      .then(setPaymentMethods)
+      .then((data) => setPaymentMethods(data))
       .finally(() => setLoading(false));
   }, []);
 
+  // 🔁 MAP BACKEND METHODS BY TYPE
+  const methodByType = paymentMethods.reduce((acc, m) => {
+    acc[m.method_type] = m;
+    return acc;
+  }, {});
+
   const submitWithdraw = async () => {
-    if (!amount || !methodId || !details) {
-      alert("All fields are required");
+    // 🔐 FRONTEND VALIDATION
+    if (!amount || !methodId || !details || !screenshot) {
+      setError("All fields including payment screenshot are required");
       return;
     }
 
+    setError("");
+
     try {
+      setSubmitting(true);
+
+      const formData = new FormData();
+      formData.append("user_committee_id", userCommitteeId);
+      formData.append("amount", amount);
+      formData.append("payment_method_id", methodId);
+      formData.append("withdrawal_details", details);
+      formData.append("payment_screenshot", screenshot);
+
       await apiFetch("/withdraw-request/", {
         method: "POST",
-        body: JSON.stringify({
-          user_committee_id: userCommitteeId,
-          amount: amount,
-          payment_method_id: methodId,
-          withdrawal_details: details,
-        }),
+        body: formData, // 🔥 multipart/form-data
       });
 
       alert("Withdrawal request submitted");
       navigate(`/payment-history/${userCommitteeId}`);
     } catch (err) {
-      alert(err.error || "Failed to submit withdrawal");
+      alert(err?.error || "Failed to submit withdrawal");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -48,6 +74,7 @@ export default function CommitteeWithdraw() {
     <div style={{ maxWidth: 600, margin: "40px auto" }}>
       <h2>Withdraw from Committee</h2>
 
+      {/* AMOUNT */}
       <label>Amount</label>
       <input
         type="number"
@@ -56,6 +83,7 @@ export default function CommitteeWithdraw() {
         style={{ width: "100%", padding: 10, marginBottom: 12 }}
       />
 
+      {/* PAYMENT METHOD (STATIC UI) */}
       <label>Payment Method</label>
       <select
         value={methodId}
@@ -63,23 +91,50 @@ export default function CommitteeWithdraw() {
         style={{ width: "100%", padding: 10, marginBottom: 12 }}
       >
         <option value="">Select method</option>
-        {paymentMethods.map((pm) => (
-          <option key={pm.id} value={pm.id}>
-            {pm.name} ({pm.method_type})
-          </option>
-        ))}
+
+        {STATIC_METHODS.map((m) => {
+          const backendMethod = methodByType[m.type];
+          if (!backendMethod) return null;
+
+          return (
+            <option key={m.type} value={backendMethod.id}>
+              {m.label}
+            </option>
+          );
+        })}
       </select>
 
+      {/* WITHDRAWAL DETAILS */}
       <label>Withdrawal Details (UPI / Bank / Wallet)</label>
       <textarea
         value={details}
         onChange={(e) => setDetails(e.target.value)}
         rows={4}
-        style={{ width: "100%", padding: 10 }}
+        style={{ width: "100%", padding: 10, marginBottom: 12 }}
       />
 
+      {/* SCREENSHOT (MANDATORY) */}
+      <label>Payment Screenshot (required)</label>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          setScreenshot(e.target.files[0]);
+          setError("");
+        }}
+        style={{ width: "100%", marginBottom: 8 }}
+      />
+
+      {error && (
+        <p style={{ color: "red", fontSize: 14, marginBottom: 8 }}>
+          {error}
+        </p>
+      )}
+
+      {/* SUBMIT */}
       <button
         onClick={submitWithdraw}
+        disabled={submitting || !screenshot}
         style={{
           marginTop: 20,
           width: "100%",
@@ -89,9 +144,11 @@ export default function CommitteeWithdraw() {
           border: "none",
           borderRadius: 8,
           fontSize: 16,
+          cursor: submitting || !screenshot ? "not-allowed" : "pointer",
+          opacity: submitting || !screenshot ? 0.6 : 1,
         }}
       >
-        Request Withdrawal
+        {submitting ? "Submitting..." : "Request Withdrawal"}
       </button>
     </div>
   );

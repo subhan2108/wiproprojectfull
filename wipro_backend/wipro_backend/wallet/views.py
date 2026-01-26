@@ -102,10 +102,41 @@ import json
 from wallet.models import PaymentTransaction, PaymentMethod
 
 
+# @csrf_exempt
+# @require_POST
+# def create_payment_request(request):
+#     from rest_framework_simplejwt.authentication import JWTAuthentication
+#     jwt_authenticator = JWTAuthentication()
+#     auth = jwt_authenticator.authenticate(request)
+
+#     if not auth:
+#         return JsonResponse({"error": "Unauthorized"}, status=401)
+
+#     user, _ = auth
+#     data = json.loads(request.body)
+#     screenshot = request.FILES.get("payment_screenshot")
+
+#     tx = PaymentTransaction.objects.create(
+#         user=user,
+#         user_committee_id=data["user_committee_id"],
+#         payment_method_id=data["payment_method_id"],
+#         transaction_type="investment",
+#         payment_screenshot=screenshot,  # ✅
+#     )
+
+#     return JsonResponse({
+#         "id": tx.id,
+#         "status": tx.status,
+#     })
+
+
+# 
+
 @csrf_exempt
 @require_POST
 def create_payment_request(request):
     from rest_framework_simplejwt.authentication import JWTAuthentication
+
     jwt_authenticator = JWTAuthentication()
     auth = jwt_authenticator.authenticate(request)
 
@@ -113,17 +144,31 @@ def create_payment_request(request):
         return JsonResponse({"error": "Unauthorized"}, status=401)
 
     user, _ = auth
-    data = json.loads(request.body)
+
+    user_committee_id = request.POST.get("user_committee_id")
+    payment_method_id = request.POST.get("payment_method_id")
+    amount = request.POST.get("amount")  # ✅ FIX
+    payment_screenshot = request.FILES.get("payment_screenshot")
+
+    if not payment_method_id:
+        return JsonResponse({"error": "payment_method_id required"}, status=400)
+
+    if not amount:
+        return JsonResponse({"error": "amount required"}, status=400)
 
     tx = PaymentTransaction.objects.create(
         user=user,
-        user_committee_id=data["user_committee_id"],
-        payment_method_id=data["payment_method_id"],
+        user_committee_id=user_committee_id,
+        payment_method_id=payment_method_id,
         transaction_type="investment",
+        amount=amount,                 # ✅ FIX
+        payment_screenshot=payment_screenshot,
+        status="pending",
     )
 
     return JsonResponse({
-        "id": tx.id,
+        "id": str(tx.id),
+        "amount": float(tx.amount),
         "status": tx.status,
     })
 
@@ -339,27 +384,82 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import PaymentRequest, PaymentMethod
 
+# class CreatePaymentRequestView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         amount = request.data.get("amount")
+#         purpose = request.data.get("purpose")
+#         payment_method_id = request.data.get("payment_method_id")
+
+#         if not amount or not purpose or not payment_method_id:
+#             return Response(
+#                 {"error": "amount, purpose and payment_method_id required"},
+#                 status=400
+#             )
+
+#         payment_method = PaymentMethod.objects.get(id=payment_method_id)
+
+#         pr = PaymentRequest.objects.create(
+#             user=request.user,
+#             amount=amount,
+#             purpose=purpose,
+#             payment_method=payment_method
+#         )
+
+#         return Response({
+#             "id": pr.id,
+#             "status": pr.status,
+#             "message": "Payment request created"
+#         })
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from wallet.models import PaymentRequest, PaymentMethod
+
+
 class CreatePaymentRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         amount = request.data.get("amount")
-        purpose = request.data.get("purpose")
+        request_type = request.data.get("request_type")  # deposit / withdraw
         payment_method_id = request.data.get("payment_method_id")
+        payment_screenshot = request.FILES.get("payment_screenshot")
+        user_payment_method_details = request.data.get(
+            "withdrawal_details"
+        )  # 👈 from frontend
 
-        if not amount or not purpose or not payment_method_id:
+        if not amount or not request_type:
             return Response(
-                {"error": "amount, purpose and payment_method_id required"},
+                {"error": "amount and request_type are required"},
                 status=400
             )
 
-        payment_method = PaymentMethod.objects.get(id=payment_method_id)
+        if request_type not in ["deposit", "withdraw"]:
+            return Response(
+                {"error": "Invalid request_type"},
+                status=400
+            )
+        
+        if request_type == "withdraw" and not user_payment_method_details:
+            return Response(
+                {"error": "User payment method details required for withdrawal"},
+                status=400
+            )
+
+        payment_method = None
+        if payment_method_id:
+            payment_method = PaymentMethod.objects.get(id=payment_method_id)
 
         pr = PaymentRequest.objects.create(
             user=request.user,
             amount=amount,
-            purpose=purpose,
-            payment_method=payment_method
+            request_type=request_type,
+            payment_method=payment_method,
+            payment_screenshot=payment_screenshot,  # ✅ SAVED
+            user_payment_method_details=user_payment_method_details,
         )
 
         return Response({
@@ -371,18 +471,44 @@ class CreatePaymentRequestView(APIView):
 
 
 
+
+# class MyPaymentHistoryView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         payments = PaymentRequest.objects.filter(user=request.user).order_by("-created_at")
+
+#         data = []
+#         for p in payments:
+#             data.append({
+#                 "id": p.id,
+#                 "amount": float(p.amount),
+#                 "purpose": p.purpose,
+#                 "status": p.status,
+#                 "payment_method": p.payment_method.name if p.payment_method else None,
+#                 "admin_message": p.admin_message,
+#                 "created_at": p.created_at.strftime("%Y-%m-%d %H:%M"),
+#             })
+
+#         return Response(data)
+
+
+
+
 class MyPaymentHistoryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        payments = PaymentRequest.objects.filter(user=request.user).order_by("-created_at")
+        payments = PaymentRequest.objects.filter(
+            user=request.user
+        ).order_by("-created_at")
 
         data = []
         for p in payments:
             data.append({
                 "id": p.id,
                 "amount": float(p.amount),
-                "purpose": p.purpose,
+                "request_type": p.request_type,  # ✅ NEW
                 "status": p.status,
                 "payment_method": p.payment_method.name if p.payment_method else None,
                 "admin_message": p.admin_message,
@@ -390,10 +516,6 @@ class MyPaymentHistoryView(APIView):
             })
 
         return Response(data)
-
-
-
-
 
 
 
@@ -467,6 +589,42 @@ from rest_framework.response import Response
 from wallet.models import PaymentRequest
 
 
+# @api_view(["GET"])
+# @permission_classes([IsAuthenticated])
+# def wallet_payment_transactions(request):
+#     user = request.user
+
+#     payments = (
+#         PaymentRequest.objects
+#         .filter(user=user, status="approved")
+#         .select_related("payment_method")
+#         .order_by("-created_at")
+#     )
+
+#     data = []
+
+#     for p in payments:
+#         if p.earned > 0:
+#             data.append({
+#                 "id": p.id,
+#                 "tx_type": "earn",
+#                 "payment_method": p.payment_method.name if p.payment_method else "-",
+#                 "amount": float(p.earned),
+#                 "created_at": p.created_at.strftime("%Y-%m-%d"),
+#             })
+
+#         if p.paid > 0:
+#             data.append({
+#                 "id": f"{p.id}-paid",
+#                 "tx_type": "paid",
+#                 "payment_method": p.payment_method.name if p.payment_method else "-",
+#                 "amount": float(p.paid),
+#                 "created_at": p.created_at.strftime("%Y-%m-%d"),
+#             })
+
+#     return Response(data)
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def wallet_payment_transactions(request):
@@ -482,7 +640,7 @@ def wallet_payment_transactions(request):
     data = []
 
     for p in payments:
-        if p.earned > 0:
+        if p.request_type == "deposit":
             data.append({
                 "id": p.id,
                 "tx_type": "earn",
@@ -491,9 +649,9 @@ def wallet_payment_transactions(request):
                 "created_at": p.created_at.strftime("%Y-%m-%d"),
             })
 
-        if p.paid > 0:
+        elif p.request_type == "withdraw":
             data.append({
-                "id": f"{p.id}-paid",
+                "id": p.id,
                 "tx_type": "paid",
                 "payment_method": p.payment_method.name if p.payment_method else "-",
                 "amount": float(p.paid),
@@ -501,8 +659,6 @@ def wallet_payment_transactions(request):
             })
 
     return Response(data)
-
-
 
 
 
@@ -629,6 +785,7 @@ def withdraw_request(request):
     method_id = request.data.get("payment_method_id")
     withdrawal_details = request.data.get("withdrawal_details", "")
     user_committee_id = request.data.get("user_committee_id")
+    payment_screenshot = request.FILES.get("payment_screenshot")
 
     # ---------------------------
     # 🔹 WALLET CHECK
@@ -686,6 +843,7 @@ def withdraw_request(request):
         withdrawal_details=withdrawal_details,
         wallet=wallet,
         wallet_effect="debit",
+        payment_screenshot=payment_screenshot,  # ✅ ADD THIS
         status="pending",
         created_at=timezone.now(),
     )

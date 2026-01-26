@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils import timezone
+from django.utils.html import format_html
 
 # Register your models here.
 from django.contrib import admin
@@ -171,6 +172,106 @@ class PaymentMethodAdmin(admin.ModelAdmin):
     search_fields = ("name", "upi_id", "account_number")
 
 
+# @admin.register(PaymentTransaction)
+# class PaymentTransactionAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "user",
+#         "user_committee",
+#         "transaction_type",
+#         "amount",
+#         "payment_method",
+#         "status",
+#         "created_at",
+#     )
+#     list_filter = ("transaction_type", "status", "payment_method")
+#     search_fields = ("user__username", "reference_id")
+#     readonly_fields = ("processed_at", "created_at", "payment_screenshot_previewt")
+
+#     fieldsets = (
+#         (None, {
+#             "fields": (
+#                 "user",
+#                 "user_committee",
+#                 "transaction_type",
+#                 "amount",
+#                 "payment_method",
+#                 "payment_screenshot_preview",  # 👈 SHOW IMAGE
+#                 "status",
+#                 "admin_note",
+#             )
+#         }),
+#     )
+
+#     actions = ["approve_payment", "reject_payment"]
+
+#     def approve_payment(self, request, queryset):
+#         for tx in queryset.filter(status="pending"):
+#             if tx.amount:
+#                 uc = tx.user_committee
+#                  # ✅ UPDATE INVESTMENT
+#             uc.total_invested += tx.amount
+#             uc.save()
+
+#             tx.status = "approved"
+#             tx.processed_at = timezone.now()
+#             tx.save()
+
+#     def approve_payment(self, request, queryset):
+#         for tx in queryset.filter(status="pending"):
+#             tx.status = "approved"
+#             tx.processed_at = timezone.now()
+#             tx.save(update_fields=["status", "processed_at"])
+
+#             # 🔥 THIS IS THE ONLY PLACE MONEY MOVES
+#             apply_payment_to_admin_wallet(tx)
+
+#     approve_payment.short_description = "Approve selected payments"
+
+#     def save_model(self, request, obj, form, change):
+#         if (
+#             change
+#             and obj.status == "approved"
+#             and obj.processed_at is None
+#             and obj.amount
+#         ):
+#             uc = obj.user_committee
+#             uc.total_invested += obj.amount
+#             uc.save()
+
+#             obj.processed_at = timezone.now()
+
+#         super().save_model(request, obj, form, change)
+
+#     def reject_payment(self, request, queryset):
+#         queryset.update(
+#             status="rejected",
+#             processed_at=timezone.now()
+#         )
+
+#     reject_payment.short_description = "Reject payment"
+
+#     def payment_screenshot_preview(self, obj):
+#         if not obj.payment_screenshot:
+#             return "No screenshot uploaded"
+
+#         return format_html(
+#             '<a href="{0}" target="_blank">'
+#             '<img src="{0}" style="max-height:300px; border-radius:8px;" />'
+#             '</a>',
+#             obj.payment_screenshot.url
+#         )
+
+#     payment_screenshot_preview.short_description = "Payment Screenshot"
+
+
+
+from django.utils.html import format_html
+from django.contrib import admin
+from django.utils import timezone
+from .models import PaymentTransaction
+from wallet.services import apply_payment_to_admin_wallet
+
+
 @admin.register(PaymentTransaction)
 class PaymentTransactionAdmin(admin.ModelAdmin):
     list_display = (
@@ -182,23 +283,45 @@ class PaymentTransactionAdmin(admin.ModelAdmin):
         "status",
         "created_at",
     )
+
     list_filter = ("transaction_type", "status", "payment_method")
     search_fields = ("user__username", "reference_id")
-    readonly_fields = ("processed_at", "created_at")
+
+    readonly_fields = (
+        "created_at",
+        "processed_at",
+        "payment_screenshot_preview",  # ✅ FIXED
+    )
+
+    fieldsets = (
+        (None, {
+            "fields": (
+                "user",
+                "user_committee",
+                "transaction_type",
+                "amount",
+                "payment_method",
+                "payment_screenshot_preview",  # ✅ PREVIEW
+                "status",
+                "admin_note",
+            )
+        }),
+    )
 
     actions = ["approve_payment", "reject_payment"]
 
-    def approve_payment(self, request, queryset):
-        for tx in queryset.filter(status="pending"):
-            if tx.amount:
-                uc = tx.user_committee
-                 # ✅ UPDATE INVESTMENT
-            uc.total_invested += tx.amount
-            uc.save()
+    def payment_screenshot_preview(self, obj):
+        if not obj.payment_screenshot:
+            return "No screenshot uploaded"
 
-            tx.status = "approved"
-            tx.processed_at = timezone.now()
-            tx.save()
+        return format_html(
+            '<a href="{0}" target="_blank">'
+            '<img src="{0}" style="max-height:300px; border-radius:8px;" />'
+            '</a>',
+            obj.payment_screenshot.url
+        )
+
+    payment_screenshot_preview.short_description = "Payment Screenshot"
 
     def approve_payment(self, request, queryset):
         for tx in queryset.filter(status="pending"):
@@ -206,25 +329,10 @@ class PaymentTransactionAdmin(admin.ModelAdmin):
             tx.processed_at = timezone.now()
             tx.save(update_fields=["status", "processed_at"])
 
-            # 🔥 THIS IS THE ONLY PLACE MONEY MOVES
+            # 🔥 SINGLE SOURCE OF MONEY MOVEMENT
             apply_payment_to_admin_wallet(tx)
 
     approve_payment.short_description = "Approve selected payments"
-
-    def save_model(self, request, obj, form, change):
-        if (
-            change
-            and obj.status == "approved"
-            and obj.processed_at is None
-            and obj.amount
-        ):
-            uc = obj.user_committee
-            uc.total_invested += obj.amount
-            uc.save()
-
-            obj.processed_at = timezone.now()
-
-        super().save_model(request, obj, form, change)
 
     def reject_payment(self, request, queryset):
         queryset.update(
@@ -233,7 +341,6 @@ class PaymentTransactionAdmin(admin.ModelAdmin):
         )
 
     reject_payment.short_description = "Reject payment"
-
 
 
 
@@ -279,8 +386,9 @@ from .models import PaymentRequest
 class PaymentRequestAdmin(admin.ModelAdmin):
     list_display = (
         "user",
+        "request_type",   # ✅ NEW
         "amount",
-        "purpose",
+        # "purpose",
         "payment_method",
         "status",
         "earned",
@@ -288,8 +396,43 @@ class PaymentRequestAdmin(admin.ModelAdmin):
         "created_at",
     )
 
-    list_filter = ("status", "purpose")
+    # list_filter = ("request_type","status", "purpose")
+
+    list_filter = ("request_type","status",)
+
     search_fields = ("user__username",)
+
+    readonly_fields = ("created_at", "processed_at",  "payment_screenshot_preview",)
+
+    fieldsets = (
+        (None, {
+            "fields": (
+                "user",
+                "request_type",
+                "amount",
+                "payment_method",
+                "payment_screenshot_preview",
+                "user_payment_method_details",  # ✅ SHOWN
+                "status",
+                "earned",
+                "paid",
+                "admin_message",
+            )
+        }),
+    )
+
+    def payment_screenshot_preview(self, obj):
+        if not obj.payment_screenshot:
+            return "No screenshot uploaded"
+
+        return format_html(
+            '<a href="{0}" target="_blank">'
+            '<img src="{0}" style="max-height:300px; border-radius:8px;" />'
+            '</a>',
+            obj.payment_screenshot.url
+        )
+
+    payment_screenshot_preview.short_description = "Payment Screenshot"
 
     actions = ["approve_payment", "reject_payment"]
 
@@ -307,6 +450,14 @@ class PaymentRequestAdmin(admin.ModelAdmin):
         )
 
     reject_payment.short_description = "Reject selected payment requests"
+
+    def save(self, *args, **kwargs):
+      if self.request_type == "deposit":
+        self.paid = 0
+      elif self.request_type == "withdraw":
+        self.earned = 0
+      super().save(*args, **kwargs)
+
 
 
 

@@ -83,7 +83,7 @@ export default function EditPropertyPage() {
         </div>
 
         {/* IMAGE MANAGER */}
-        <div className="card">
+        {/* <div className="card">
           <h3 className="card-title">Property Images</h3>
 
           <PropertyImageManager
@@ -91,7 +91,7 @@ export default function EditPropertyPage() {
             images={property.images || []}
             onRefresh={fetchProperty}
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );

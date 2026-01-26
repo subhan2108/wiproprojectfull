@@ -47,7 +47,7 @@ export default function CreateProperty() {
     contact_email: "",
     investment_enabled: true,
     investors_required: 10,
-    investors_min: 10,
+    investors_min: 2,
     investors_max: 50,
   });
 
@@ -95,6 +95,7 @@ export default function CreateProperty() {
     investors_max: Number(form.investors_max),
   });
 
+  
   /* ---------------- SUBMIT PROPERTY ---------------- */
 
   const submitProperty = async (e) => {
@@ -126,22 +127,30 @@ export default function CreateProperty() {
   /* ---------------- LISTING PAYMENT ---------------- */
 
   const handleListingPayment = async () => {
-    setPaymentLoading(true);
+  setPaymentLoading(true);
 
-    try {
-      const res = await apiFetch(
-        `/properties/${propertyId}/request-listing/`,
-        { method: "POST" }
-      );
+  try {
+    // ✅ STEP 1: Create listing request
+    const req = await apiFetch(
+      `/properties/${propertyId}/request-listing/`,
+      { method: "POST" }
+    );
 
-      alert(res.message || "Listing request created");
-      setShowPaymentModal(false);
-    } catch (err) {
-      alert(err?.error || err?.detail || "Payment failed");
-    } finally {
-      setPaymentLoading(false);
-    }
-  };
+    console.log("Listing request created:", req);
+
+    
+
+    alert("Property submitted for admin approval");
+    setShowPaymentModal(false);
+  } catch (err) {
+    console.error(err);
+    alert(err?.error || err?.detail || "Listing payment failed");
+  } finally {
+    setPaymentLoading(false);
+  }
+};
+
+
 
   /* ---------------- IMAGE UPLOAD ---------------- */
 
@@ -229,11 +238,12 @@ export default function CreateProperty() {
 
       {/* 🔥 LISTING PAYMENT POPUP */}
       <ListingPaymentModal
-        open={showPaymentModal}
-        loading={paymentLoading}
-        onClose={() => setShowPaymentModal(false)}
-        onConfirm={handleListingPayment}
-      />
+  open={showPaymentModal}
+  loading={paymentLoading}
+  onClose={() => setShowPaymentModal(false)}
+  onConfirm={handleListingPayment}
+/>
+
     </div>
   );
 }

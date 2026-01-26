@@ -1,10 +1,19 @@
-export default function ListingPaymentModal({
-  open,
-  onClose,
-  onConfirm,
-  loading,
-}) {
+import "./ListingPaymentModal.css";
+import { useNavigate } from "react-router-dom";
+
+export default function ListingPaymentModal({ open, onClose }) {
+  const navigate = useNavigate();
+
   if (!open) return null;
+
+  const handlePay = () => {
+    navigate("/pay", {
+      state: {
+        purpose: "property_listing",
+        amount: 1000,
+      },
+    });
+  };
 
   return (
     <div className="modal-backdrop">
@@ -15,12 +24,8 @@ export default function ListingPaymentModal({
           To list your property on the marketplace, please pay the listing fee.
         </p>
 
-        <button
-          className="btn-pay"
-          disabled={loading}
-          onClick={onConfirm}
-        >
-          {loading ? "Processing..." : "Pay ₹1000 to list your property"}
+        <button className="btn-pay" onClick={handlePay}>
+          Pay ₹1000 to list your property
         </button>
 
         <button className="btn-cancel" onClick={onClose}>
