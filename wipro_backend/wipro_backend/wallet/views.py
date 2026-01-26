@@ -640,14 +640,14 @@ def withdraw_request(request):
 
     available_balance = get_available_balance(wallet)
 
-    if available_balance < amount:
-        return Response(
-            {
-                "error": "Insufficient balance",
-                "available_balance": float(available_balance),
-            },
-            status=400,
-        )
+    # if available_balance < amount:
+    #     return Response(
+    #         {
+    #             "error": "Insufficient balance",
+    #             "available_balance": float(available_balance),
+    #         },
+    #         status=400,
+    #     )
 
     # ---------------------------
     # 🔹 PAYMENT METHOD CHECK
