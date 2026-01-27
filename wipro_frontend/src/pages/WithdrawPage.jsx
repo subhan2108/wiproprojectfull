@@ -13,18 +13,12 @@ export default function WithdrawPage() {
 
   const [amount, setAmount] = useState("");
   const [userPaymentMethod, setUserPaymentMethod] = useState("");
-
-  // 🔥 METHOD-SPECIFIC STATES
-  const [upiId, setUpiId] = useState("");
-  const [usdtAddress, setUsdtAddress] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [bankAccount, setBankAccount] = useState("");
-  const [bankIfsc, setBankIfsc] = useState("");
+  const [withdrawalDetails, setWithdrawalDetails] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  /* 🔹 Fetch wallet (net balance) */
+  /* 🔹 Fetch wallet summary (NET BALANCE) */
   useEffect(() => {
     apiFetch("/me/")
       .then((res) => {
@@ -34,54 +28,15 @@ export default function WithdrawPage() {
       .catch(() => setLoadingWallet(false));
   }, []);
 
-  const resetMethodFields = () => {
-    setUpiId("");
-    setUsdtAddress("");
-    setBankName("");
-    setBankAccount("");
-    setBankIfsc("");
-  };
-
   const handleWithdraw = async () => {
-    let withdrawalDetails = "";
-
-    if (!amount || !userPaymentMethod) {
-      setError("Amount and withdrawal method are required");
+    if (!amount || !userPaymentMethod || !withdrawalDetails) {
+      setError("All fields are required");
       return;
     }
 
     if (wallet && Number(amount) > Number(wallet.net_balance)) {
       setError("Withdrawal amount exceeds available balance");
       return;
-    }
-
-    // 🔥 BUILD DETAILS BASED ON METHOD
-    if (userPaymentMethod === "upi") {
-      if (!upiId) {
-        setError("UPI ID is required");
-        return;
-      }
-      withdrawalDetails = `UPI ID: ${upiId}`;
-    }
-
-    if (userPaymentMethod === "usdt") {
-      if (!usdtAddress) {
-        setError("USDT wallet address is required");
-        return;
-      }
-      withdrawalDetails = `USDT Address: ${usdtAddress}`;
-    }
-
-    if (userPaymentMethod === "bank") {
-      if (!bankName || !bankAccount || !bankIfsc) {
-        setError("All bank details are required");
-        return;
-      }
-      withdrawalDetails = `
-Account Holder Name: ${bankName}
-Account Number: ${bankAccount}
-IFSC Code: ${bankIfsc}
-      `.trim();
     }
 
     setError("");
@@ -113,11 +68,28 @@ IFSC Code: ${bankIfsc}
     return <p style={{ padding: 40 }}>Loading wallet...</p>;
   }
 
+  /* 🔹 Dynamic labels */
+  const getLabel = () => {
+    if (userPaymentMethod === "upi") return "Enter your UPI ID";
+    if (userPaymentMethod === "bank") return "Enter your Bank Details";
+    if (userPaymentMethod === "usdt") return "Enter your USDT Wallet Address";
+    return "";
+  };
+
+  const getPlaceholder = () => {
+    if (userPaymentMethod === "upi") return "example@upi";
+    if (userPaymentMethod === "bank")
+      return "Account Holder Name, Account Number, IFSC, Bank Name";
+    if (userPaymentMethod === "usdt")
+      return "USDT wallet address (TRC20 / ERC20)";
+    return "";
+  };
+
   return (
     <div style={{ maxWidth: 600, margin: "40px auto", padding: 30 }}>
       <h2>Withdraw Funds</h2>
 
-      {/* NET BALANCE */}
+      {/* 🔥 NET BALANCE */}
       {wallet && (
         <div
           style={{
@@ -128,31 +100,48 @@ IFSC Code: ${bankIfsc}
             marginBottom: 20,
           }}
         >
-          <p style={{ margin: 0, fontSize: 14 }}>Available Balance</p>
-          <h3>{formatPrice(wallet.net_balance, currency)}</h3>
+          <p style={{ margin: 0, fontSize: 14, color: "#065f46" }}>
+            Available Balance
+          </p>
+          <h3 style={{ marginTop: 6 }}>
+            {formatPrice(wallet.net_balance, currency)}
+          </h3>
         </div>
       )}
 
       {/* AMOUNT */}
-      <label>Amount</label>
+      <label style={{ fontWeight: 600 }}>Amount</label>
       <input
         type="number"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         placeholder="Enter withdrawal amount"
-        style={{ width: "100%", padding: 10, marginBottom: 16 }}
+        style={{
+          width: "100%",
+          padding: 10,
+          marginTop: 6,
+          marginBottom: 16,
+          borderRadius: 6,
+          border: "1px solid #d1d5db",
+        }}
       />
 
-      {/* METHOD */}
-      <label>Withdrawal Method</label>
+      {/* WITHDRAW METHOD */}
+      <label style={{ fontWeight: 600 }}>Withdrawal Method</label>
       <select
         value={userPaymentMethod}
         onChange={(e) => {
           setUserPaymentMethod(e.target.value);
-          resetMethodFields();
-          setError("");
+          setWithdrawalDetails("");
         }}
-        style={{ width: "100%", padding: 10, marginBottom: 16 }}
+        style={{
+          width: "100%",
+          padding: 10,
+          marginTop: 6,
+          marginBottom: 16,
+          borderRadius: 6,
+          border: "1px solid #d1d5db",
+        }}
       >
         <option value="">Select method</option>
         <option value="upi">UPI</option>
@@ -160,57 +149,23 @@ IFSC Code: ${bankIfsc}
         <option value="usdt">USDT</option>
       </select>
 
-      {/* 🔥 UPI */}
-      {userPaymentMethod === "upi" && (
+      {/* 🔥 CONDITIONAL TEXTAREA */}
+      {userPaymentMethod && (
         <>
-          <label>Enter your UPI ID</label>
-          <input
-            value={upiId}
-            onChange={(e) => setUpiId(e.target.value)}
-            placeholder="example@upi"
-            style={{ width: "100%", padding: 10, marginBottom: 16 }}
-          />
-        </>
-      )}
-
-      {/* 🔥 BANK */}
-      {userPaymentMethod === "bank" && (
-        <>
-          <label>Account Holder Name</label>
-          <input
-            value={bankName}
-            onChange={(e) => setBankName(e.target.value)}
-            placeholder="Enter account holder name"
-            style={{ width: "100%", padding: 10, marginBottom: 12 }}
-          />
-
-          <label>Account Number</label>
-          <input
-            value={bankAccount}
-            onChange={(e) => setBankAccount(e.target.value)}
-            placeholder="Enter account number"
-            style={{ width: "100%", padding: 10, marginBottom: 12 }}
-          />
-
-          <label>IFSC Code</label>
-          <input
-            value={bankIfsc}
-            onChange={(e) => setBankIfsc(e.target.value)}
-            placeholder="Enter IFSC code"
-            style={{ width: "100%", padding: 10, marginBottom: 16 }}
-          />
-        </>
-      )}
-
-      {/* 🔥 USDT */}
-      {userPaymentMethod === "usdt" && (
-        <>
-          <label>USDT Wallet Address</label>
-          <input
-            value={usdtAddress}
-            onChange={(e) => setUsdtAddress(e.target.value)}
-            placeholder="Enter USDT wallet address"
-            style={{ width: "100%", padding: 10, marginBottom: 16 }}
+          <label style={{ fontWeight: 600 }}>{getLabel()}</label>
+          <textarea
+            value={withdrawalDetails}
+            onChange={(e) => setWithdrawalDetails(e.target.value)}
+            rows={4}
+            placeholder={getPlaceholder()}
+            style={{
+              width: "100%",
+              padding: 10,
+              marginTop: 6,
+              marginBottom: 16,
+              borderRadius: 6,
+              border: "1px solid #d1d5db",
+            }}
           />
         </>
       )}
@@ -221,6 +176,7 @@ IFSC Code: ${bankIfsc}
         </p>
       )}
 
+      {/* SUBMIT */}
       <button
         onClick={handleWithdraw}
         disabled={submitting}
@@ -229,9 +185,11 @@ IFSC Code: ${bankIfsc}
           padding: 14,
           background: "#dc2626",
           color: "#fff",
-          borderRadius: 8,
           border: "none",
+          borderRadius: 8,
           fontSize: 16,
+          cursor: "pointer",
+          opacity: submitting ? 0.6 : 1,
         }}
       >
         {submitting ? "Submitting..." : "Request Withdrawal"}
