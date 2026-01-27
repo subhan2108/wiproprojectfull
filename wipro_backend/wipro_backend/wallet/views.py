@@ -767,6 +767,101 @@ def get_available_balance(wallet):
     return credited - debited + wallet.bonus_balance
 
 
+# @api_view(["POST"])
+# @permission_classes([IsAuthenticated])
+# def withdraw_request(request):
+#     user = request.user
+
+#     # ---------------------------
+#     # 🔹 INPUT VALIDATION
+#     # ---------------------------
+#     try:
+#         amount = Decimal(request.data.get("amount"))
+#     except:
+#         return Response({"error": "Invalid amount"}, status=400)
+
+#     if amount <= 0:
+#         return Response({"error": "Amount must be greater than zero"}, status=400)
+
+#     method_id = request.data.get("payment_method_id")
+#     withdrawal_details = request.data.get("withdrawal_details", "")
+#     user_committee_id = request.data.get("user_committee_id")
+#     payment_screenshot = request.FILES.get("payment_screenshot")
+
+#     # ---------------------------
+#     # 🔹 WALLET CHECK
+#     # ---------------------------
+#     try:
+#         wallet = Wallet.objects.get(user=user)
+#     except Wallet.DoesNotExist:
+#         return Response({"error": "Wallet not found"}, status=404)
+
+#     available_balance = get_available_balance(wallet)
+
+#     # if available_balance < amount:
+#     #     return Response(
+#     #         {
+#     #             "error": "Insufficient balance",
+#     #             "available_balance": float(available_balance),
+#     #         },
+#     #         status=400,
+#     #     )
+
+#     # ---------------------------
+#     # 🔹 PAYMENT METHOD CHECK
+#     # ---------------------------
+#     try:
+#         payment_method = PaymentMethod.objects.get(
+#             id=method_id,
+#             is_active=True,
+#             for_withdrawal=True
+#         )
+#     except PaymentMethod.DoesNotExist:
+#         return Response({"error": "Invalid payment method"}, status=400)
+
+#     # ---------------------------
+#     # 🔹 OPTIONAL COMMITTEE
+#     # ---------------------------
+#     user_committee = None
+#     if user_committee_id:
+#         try:
+#             user_committee = UserCommittee.objects.get(
+#                 id=user_committee_id,
+#                 user=user
+#             )
+#         except UserCommittee.DoesNotExist:
+#             return Response({"error": "Invalid committee"}, status=400)
+
+#     # ---------------------------
+#     # 🔹 CREATE WITHDRAWAL REQUEST
+#     # ---------------------------
+#     PaymentTransaction.objects.create(
+#         user=user,
+#         user_committee=user_committee,
+#         transaction_type="withdrawal",
+#         amount=amount,
+#         payment_method=payment_method,
+#         withdrawal_details=withdrawal_details,
+#         wallet=wallet,
+#         wallet_effect="debit",
+#         payment_screenshot=payment_screenshot,  # ✅ ADD THIS
+#         status="pending",
+#         created_at=timezone.now(),
+#     )
+
+#     return Response(
+#         {
+#             "success": True,
+#             "message": "Withdrawal request submitted. Awaiting admin approval.",
+#             "amount": float(amount),
+#         },
+#         status=201,
+#     )
+
+
+
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def withdraw_request(request):
@@ -783,10 +878,21 @@ def withdraw_request(request):
     if amount <= 0:
         return Response({"error": "Amount must be greater than zero"}, status=400)
 
-    method_id = request.data.get("payment_method_id")
+    user_payment_method = request.data.get("user_payment_method")
     withdrawal_details = request.data.get("withdrawal_details", "")
     user_committee_id = request.data.get("user_committee_id")
-    payment_screenshot = request.FILES.get("payment_screenshot")
+
+    if not user_payment_method:
+        return Response(
+            {"error": "User payment method is required"},
+            status=400
+        )
+
+    if not withdrawal_details:
+        return Response(
+            {"error": "Withdrawal details are required"},
+            status=400
+        )
 
     # ---------------------------
     # 🔹 WALLET CHECK
@@ -798,6 +904,7 @@ def withdraw_request(request):
 
     available_balance = get_available_balance(wallet)
 
+    # (optional — enable later)
     # if available_balance < amount:
     #     return Response(
     #         {
@@ -806,18 +913,6 @@ def withdraw_request(request):
     #         },
     #         status=400,
     #     )
-
-    # ---------------------------
-    # 🔹 PAYMENT METHOD CHECK
-    # ---------------------------
-    try:
-        payment_method = PaymentMethod.objects.get(
-            id=method_id,
-            is_active=True,
-            for_withdrawal=True
-        )
-    except PaymentMethod.DoesNotExist:
-        return Response({"error": "Invalid payment method"}, status=400)
 
     # ---------------------------
     # 🔹 OPTIONAL COMMITTEE
@@ -840,11 +935,15 @@ def withdraw_request(request):
         user_committee=user_committee,
         transaction_type="withdrawal",
         amount=amount,
-        payment_method=payment_method,
+
+        # 🔥 USER-DEFINED METHOD (CORE FIX)
         withdrawal_details=withdrawal_details,
+
+        # optional / admin-side only
+        payment_method=None,
+
         wallet=wallet,
         wallet_effect="debit",
-        payment_screenshot=payment_screenshot,  # ✅ ADD THIS
         status="pending",
         created_at=timezone.now(),
     )
