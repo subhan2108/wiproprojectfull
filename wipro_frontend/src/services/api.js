@@ -4,6 +4,11 @@
 //const TOKEN_REFRESH_ENDPOINT ="/auth/token/refresh/";
 
 
+ const API_BASE_URL = "https://wiproadmin.onrender.com/api";
+ const AUTH_PREFIX = "/auth";
+ const TOKEN_REFRESH_ENDPOINT ="/auth/token/refresh/";
+
+
 
 
 // Helper function to get auth headers
