@@ -23,8 +23,8 @@ export default function JoinCommitteeModal({ committee, onClose }) {
         method: "POST",
       });
 
-      // navigate(`/join-success/${committee.id}`);
-      navigate(`/my-committee/${userCommitteeId}`);
+       navigate(`/join-success/${committee.id}`);
+      //navigate(`/my-committee/${userCommitteeId}`);
     } catch (err) {
       setError(err.error || "Failed to join committee");
     } finally {
