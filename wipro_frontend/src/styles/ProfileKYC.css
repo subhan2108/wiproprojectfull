@@ -126,7 +126,7 @@
 /* UPLOAD */
 .upload-box {
   position: relative;
-  
+  border: 1px solid;
   border-radius: 14px;
   padding: 32px;
   text-align: center;
@@ -558,4 +558,17 @@
 
 .upload-box.d{
   display: block;
+}
+
+
+.image-folder{
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .image-folder{
+    display: block;
+  }   
 }
