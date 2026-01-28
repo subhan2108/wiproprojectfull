@@ -1,12 +1,12 @@
 // Get environment variables
-const API_BASE_URL = "http://127.0.0.1:8000/api";
-const AUTH_PREFIX =  "/auth";
-const TOKEN_REFRESH_ENDPOINT ="/auth/token/refresh/";
+//const API_BASE_URL = "http://127.0.0.1:8000/api";
+//const AUTH_PREFIX =  "/auth";
+//const TOKEN_REFRESH_ENDPOINT ="/auth/token/refresh/";
 
 
- //const API_BASE_URL = "https://wiproadmin.onrender.com/api";
- //const AUTH_PREFIX = "/auth";
- //const TOKEN_REFRESH_ENDPOINT ="/auth/token/refresh/";
+ const API_BASE_URL = "https://wiproadmin.onrender.com/api";
+ const AUTH_PREFIX = "/auth";
+ const TOKEN_REFRESH_ENDPOINT ="/auth/token/refresh/";
 
 
 
