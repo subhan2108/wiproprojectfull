@@ -37,8 +37,8 @@
 
 
 //const API_BASE = "https://wipobackend.onrender.com/api";
- //const API_BASE = "http://127.0.0.1:8000/api";
- const API_BASE = "https://wiproadmin.onrender.com/api";
+ const API_BASE = "http://127.0.0.1:8000/api";
+ //const API_BASE = "https://wiproadmin.onrender.com/api";
 const REFRESH_ENDPOINT = "/auth/token/refresh/";
 
 let isRefreshing = false;

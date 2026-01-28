@@ -34,6 +34,15 @@ class UserVerification(models.Model):
         blank=True,
         null=True
     )
+
+    # ✅ NEW FIELD
+    aadhar_back_photo = CloudinaryField(
+        "aadhar_back",
+        blank=True,
+        null=True
+    )
+
+    
     pan_card_photo = CloudinaryField(
         "pan_card",
         blank=True,

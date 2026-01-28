@@ -126,7 +126,7 @@
 /* UPLOAD */
 .upload-box {
   position: relative;
-  border: 2px dashed #c7eedd;
+  
   border-radius: 14px;
   padding: 32px;
   text-align: center;
@@ -322,4 +322,240 @@
     .kyc-card {
       width: -webkit-fill-available;
     }
+}
+
+
+
+/* ===============================
+   KYC TYPE SELECTOR
+================================ */
+
+.kyc-type-box {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.kyc-type-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #111827;
+}
+
+.kyc-type-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.kyc-option {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.kyc-option:hover {
+  border-color: #2563eb;
+  background: #f0f7ff;
+}
+
+.kyc-option.active {
+  border-color: #2563eb;
+  background: #eef4ff;
+}
+
+.kyc-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.kyc-option i {
+  font-size: 26px;
+  color: #2563eb;
+}
+
+.kyc-option strong {
+  display: block;
+  font-size: 14px;
+  color: #111827;
+}
+
+.kyc-option span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+
+
+
+.has-error input {
+  border: 1px solid #dc2626;
+  background: #fef2f2;
+}
+
+.field-error {
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 4px;
+}
+.has-error input {
+  border: 1px solid #dc2626;
+  background: #fef2f2;
+}
+
+.field-error {
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 4px;
+}
+.has-error input {
+  border: 1px solid #dc2626;
+  background: #fef2f2;
+}
+
+.field-error {
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 4px;
+}
+
+
+.has-error input {
+  border: 1px solid #dc2626;
+  background: #fef2f2;
+}
+
+.field-error {
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 4px;
+}
+
+.upload-area {
+  border: 2px dashed #a7f3d0;
+  padding: 14px;
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.upload-area input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.preview-img {
+  max-width: 120px;
+  border-radius: 8px;
+}
+
+
+/* =========================
+   KYC STATUS PAGE
+========================= */
+
+.kyc-status-page {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9fafb;
+}
+
+.kyc-status-card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px 28px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* ICON */
+.kyc-status-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+
+.kyc-status-card.pending .kyc-status-icon {
+  color: #f59e0b;
+}
+
+.kyc-status-card.approved .kyc-status-icon {
+  color: #16a34a;
+}
+
+.kyc-status-card.rejected .kyc-status-icon {
+  color: #dc2626;
+}
+
+/* TITLE */
+.kyc-status-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+/* TEXT */
+.kyc-status-text {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+/* INFO */
+.kyc-status-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 20px;
+}
+
+.kyc-status-info i {
+  margin-right: 6px;
+  color: #2563eb;
+}
+
+/* BUTTON */
+.kyc-status-btn {
+  padding: 10px 18px;
+  background: #22c55e;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.kyc-status-btn:hover {
+  background: transparent;
+  border: 1px solid #22c55e;
+  color: #22c55e;
+}
+
+.upload-box.d{
+  display: block;
 }
